@@ -1,0 +1,419 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import * as FiIcons from 'react-icons/fi';
+import SafeIcon from '../utils/SafeIcon';
+import { Card, Button, Input, Badge, Modal } from '../components/UI';
+import { useApp } from '../context/AppContext';
+import { generateStudentContract, sendEmail, emailTemplates, exportToCSV } from '../utils';
+import toast from 'react-hot-toast';
+
+const StudentsManagement = () => {
+  const { state, dispatch } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCourse, setFilterCourse] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+
+  const filteredStudents = state.students
+    .filter(student => {
+      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
+      const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
+      return matchesSearch && matchesStatus && matchesCourse;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+        case 'enrollment':
+          return new Date(b.enrollmentDate) - new Date(a.enrollmentDate);
+        case 'course':
+          return a.course.localeCompare(b.course);
+        case 'payment':
+          return (b.paidAmount / b.totalAmount) - (a.paidAmount / a.totalAmount);
+        default:
+          return 0;
+      }
+    });
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'active': return <Badge variant="success">Attivo</Badge>;
+      case 'suspended': return <Badge variant="warning">Sospeso</Badge>;
+      case 'completed': return <Badge variant="primary">Completato</Badge>;
+      default: return <Badge variant="default">Sconosciuto</Badge>;
+    }
+  };
+
+  const getPaymentProgress = (student) => {
+    const percentage = (student.paidAmount / student.totalAmount) * 100;
+    return {
+      percentage: Math.min(percentage, 100),
+      remaining: student.totalAmount - student.paidAmount,
+    };
+  };
+
+  const handleExport = () => {
+    const data = filteredStudents.map(student => ({
+      Nome: student.firstName,
+      Cognome: student.lastName,
+      Email: student.email,
+      Telefono: student.phone,
+      Corso: student.course,
+      Stato: student.status,
+      'Importo Totale': student.totalAmount,
+      'Importo Pagato': student.paidAmount,
+      'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT')
+    }));
+    
+    exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
+    toast.success('Export completato con successo!');
+  };
+
+  const handleSendEmail = async (student, template) => {
+    const toastId = toast.loading('Invio email in corso...');
+    
+    try {
+      const emailData = emailTemplates[template](student);
+      await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
+      
+      const updatedStudent = {
+        ...student,
+        communications: [...(student.communications || []), {
+          id: Date.now(),
+          type: 'email',
+          subject: emailData.subject,
+          sentAt: new Date().toISOString(),
+          status: 'sent'
+        }]
+      };
+      
+      dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
+      toast.success('Email inviata con successo!', { id: toastId });
+    } catch (error) {
+      toast.error('Errore durante l\'invio dell\'email', { id: toastId });
+    }
+  };
+
+  const StudentModal = () => {
+    const [formData, setFormData] = useState(selectedStudent || {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      course: '',
+      yearsToRecover: 1,
+      totalAmount: 2800,
+      status: 'active'
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      
+      if (selectedStudent) {
+        dispatch({ type: 'UPDATE_STUDENT', payload: { ...selectedStudent, ...formData } });
+        toast.success('Studente aggiornato con successo!');
+      } else {
+        const newStudent = {
+          ...formData,
+          id: Date.now(),
+          enrollmentDate: new Date().toISOString(),
+          paidAmount: 0,
+          documents: [],
+          communications: []
+        };
+        dispatch({ type: 'ADD_STUDENT', payload: newStudent });
+        toast.success('Studente aggiunto con successo!');
+      }
+      
+      setShowModal(false);
+      setSelectedStudent(null);
+    };
+
+    return (
+      <Modal
+        isOpen={showModal && modalType === 'student'}
+        onClose={() => { setShowModal(false); setSelectedStudent(null); }}
+        title={selectedStudent ? 'Modifica Studente' : 'Nuovo Studente'}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Nome *"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              required
+            />
+            <Input
+              label="Cognome *"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Email *"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+            <Input
+              label="Telefono *"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => { setShowModal(false); setSelectedStudent(null); }}
+            >
+              Annulla
+            </Button>
+            <Button type="submit" icon={FiIcons.FiSave}>
+              {selectedStudent ? 'Salva' : 'Aggiungi'} Studente
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    );
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-neutral-800">
+            Gestione Studenti
+          </h1>
+          <p className="text-neutral-600 mt-2">
+            Gestisci tutti gli studenti iscritti ai corsi
+          </p>
+        </div>
+        <div className="flex items-center space-x-3 mt-4 md:mt-0">
+          <Button variant="outline" icon={FiIcons.FiDownload} onClick={handleExport}>
+            Esporta CSV
+          </Button>
+          <Button
+            icon={FiIcons.FiPlus}
+            onClick={() => { setModalType('student'); setShowModal(true); }}
+          >
+            Nuovo Studente
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Input
+            placeholder="Cerca studenti..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            icon={FiIcons.FiSearch}
+          />
+          
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">Tutti gli stati</option>
+            <option value="active">Attivi</option>
+            <option value="suspended">Sospesi</option>
+            <option value="completed">Completati</option>
+          </select>
+
+          <select
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="all">Tutti i corsi</option>
+            {state.courses.map(course => (
+              <option key={course.id} value={course.name}>{course.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="name">Ordina per nome</option>
+            <option value="enrollment">Data iscrizione</option>
+            <option value="course">Corso</option>
+            <option value="payment">Stato pagamento</option>
+          </select>
+        </div>
+      </Card>
+
+      {/* Students Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredStudents.map((student, index) => {
+          const paymentProgress = getPaymentProgress(student);
+          
+          return (
+            <motion.div
+              key={student.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card className="p-6 hover:shadow-medium transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-medium">
+                        {student.firstName[0]}{student.lastName[0]}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-neutral-800">
+                        {student.firstName} {student.lastName}
+                      </h3>
+                      <p className="text-sm text-neutral-500">{student.email}</p>
+                    </div>
+                  </div>
+                  {getStatusBadge(student.status)}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-500">Corso:</span>
+                    <span className="font-medium text-neutral-800">{student.course}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-neutral-500">Pagamenti:</span>
+                      <span className="font-medium text-neutral-800">
+                        €{student.paidAmount} / €{student.totalAmount}
+                      </span>
+                    </div>
+                    <div className="w-full bg-neutral-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${paymentProgress.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 pt-4 border-t border-neutral-200">
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={FiIcons.FiPhone}
+                      onClick={() => window.open(`tel:${student.phone}`)}
+                    >
+                      Chiama
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={FiIcons.FiMail}
+                      onClick={() => handleSendEmail(student, 'welcome')}
+                    >
+                      Email
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      icon={FiIcons.FiEdit}
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        setModalType('student');
+                        setShowModal(true);
+                      }}
+                    >
+                      Modifica
+                    </Button>
+                    <Link to={`/students/${student.id}`}>
+                      <Button size="sm" icon={FiIcons.FiEye}>
+                        Dettagli
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Empty State */}
+      {filteredStudents.length === 0 && (
+        <Card className="p-12 text-center">
+          <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <SafeIcon icon={FiIcons.FiUsers} className="w-8 h-8 text-neutral-400" />
+          </div>
+          <h3 className="text-lg font-medium text-neutral-800 mb-2">
+            Nessuno studente trovato
+          </h3>
+          <p className="text-neutral-500 mb-6">
+            Non ci sono studenti che corrispondono ai filtri selezionati.
+          </p>
+          <Button
+            icon={FiIcons.FiPlus}
+            onClick={() => { setModalType('student'); setShowModal(true); }}
+          >
+            Aggiungi Primo Studente
+          </Button>
+        </Card>
+      )}
+
+      {/* Modals */}
+      <StudentModal />
+
+      {/* Stats Footer */}
+      <Card className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+          <div>
+            <p className="text-2xl font-bold text-neutral-800">{state.students.length}</p>
+            <p className="text-sm text-neutral-500">Totale Studenti</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-accent-600">
+              {state.students.filter(s => s.status === 'active').length}
+            </p>
+            <p className="text-sm text-neutral-500">Attivi</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-primary-600">
+              €{state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
+            </p>
+            <p className="text-sm text-neutral-500">Incassi Totali</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-warning-600">
+              €{state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
+            </p>
+            <p className="text-sm text-neutral-500">Da Incassare</p>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default StudentsManagement;
