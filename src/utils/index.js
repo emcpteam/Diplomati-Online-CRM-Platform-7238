@@ -13,6 +13,7 @@ export const generatePDF = (content, filename) => {
 export const generateStudentContract = (student) => {
   const content = `
 CONTRATTO DI ISCRIZIONE
+
 Diplomati Online Srl
 
 DATI STUDENTE:
@@ -30,9 +31,10 @@ Data Iscrizione: ${new Date(student.enrollmentDate).toLocaleDateString('it-IT')}
 
 Diplomati Online Srl
 P.IVA: IT12345678901
+
 Generato il: ${new Date().toLocaleDateString('it-IT')}
   `;
-  
+
   return generatePDF(content, `contratto-${student.firstName}-${student.lastName}.txt`);
 };
 
@@ -44,7 +46,7 @@ export const sendEmail = async (to, subject, content, settings) => {
         reject(new Error('Missing email parameters'));
         return;
       }
-      
+
       console.log('Email sent:', { to, subject, content, settings });
       resolve({
         success: true,
@@ -72,7 +74,7 @@ Cordiali saluti,
 Il team di Diplomati Online
     `
   }),
-  
+
   paymentReminder: (student) => ({
     subject: 'Promemoria pagamento - Diplomati Online',
     content: `
@@ -137,7 +139,6 @@ export const uploadFile = async (file, type = 'general') => {
         });
       }, 1000);
     };
-
     reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
   });
@@ -183,10 +184,9 @@ export const formatCurrency = (amount, locale = 'it-IT', currency = 'EUR') => {
 // Search utilities
 export const searchItems = (items, searchTerm, searchFields) => {
   if (!searchTerm.trim()) return items;
-  
+
   const term = searchTerm.toLowerCase();
-  
-  return items.filter(item => 
+  return items.filter(item =>
     searchFields.some(field => {
       const value = field.split('.').reduce((obj, key) => obj?.[key], item);
       return value?.toString().toLowerCase().includes(term);
@@ -197,7 +197,7 @@ export const searchItems = (items, searchTerm, searchFields) => {
 // Export utilities
 export const exportToCSV = (data, filename) => {
   if (!data.length) return;
-  
+
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(','),

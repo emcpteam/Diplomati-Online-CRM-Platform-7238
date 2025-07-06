@@ -48,6 +48,7 @@ const AppointmentModal = ({ appointment, onClose, mode = 'add', studentId = null
         dispatch({ type: 'UPDATE_APPOINTMENT', payload: appointmentData });
         toast.success('Appuntamento aggiornato con successo!');
       }
+
       onClose();
     } catch (error) {
       toast.error('Errore durante il salvataggio');

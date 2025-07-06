@@ -94,26 +94,12 @@ const APIIntegrations = () => {
       ],
       testEndpoint: null,
       documentation: 'https://nodemailer.com/smtp/'
-    },
-    {
-      id: 'skebby',
-      name: 'Skebby SMS',
-      description: 'Invio SMS e notifiche',
-      icon: FiIcons.FiMessageSquare,
-      fields: [
-        { key: 'username', label: 'Username', type: 'text', required: true },
-        { key: 'password', label: 'Password', type: 'password', required: true },
-        { key: 'sender', label: 'Sender ID', type: 'text', required: true }
-      ],
-      testEndpoint: 'https://api.skebby.it/API/v1.0/REST/',
-      documentation: 'https://developers.skebby.it/'
     }
   ];
 
   const getStatusBadge = (integrationId) => {
     const integration = state.settings.integrations[integrationId];
     if (!integration) return <Badge variant="danger">Non configurato</Badge>;
-    
     if (integration.active) return <Badge variant="success">Connesso</Badge>;
     return <Badge variant="warning">Disconnesso</Badge>;
   };
@@ -131,7 +117,7 @@ const APIIntegrations = () => {
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Check if required fields are filled
       const missingFields = integration.fields
         .filter(field => field.required && !config[field.key])
@@ -179,7 +165,6 @@ const APIIntegrations = () => {
 
   const handleToggleIntegration = (integrationId) => {
     const currentConfig = getIntegrationConfig(integrationId);
-    
     dispatch({
       type: 'UPDATE_INTEGRATION',
       payload: {
@@ -196,11 +181,11 @@ const APIIntegrations = () => {
 
   const handleSyncAll = async () => {
     toast.loading('Sincronizzazione in corso...', { id: 'sync-all' });
-    
+
     try {
       // Simulate sync process
       await new Promise(resolve => setTimeout(resolve, 3000));
-      
+
       // Update last sync for all active integrations
       Object.keys(state.settings.integrations).forEach(key => {
         const integration = state.settings.integrations[key];
@@ -230,7 +215,6 @@ const APIIntegrations = () => {
 
     const handleSave = async () => {
       setSaving(true);
-      
       try {
         // Validate required fields
         const missingFields = integration.fields
@@ -275,7 +259,7 @@ const APIIntegrations = () => {
               <span className="text-sm font-medium text-neutral-700">{field.label}</span>
             </label>
           );
-        
+
         case 'select':
           return (
             <div>
@@ -295,7 +279,7 @@ const APIIntegrations = () => {
               </select>
             </div>
           );
-        
+
         default:
           return (
             <Input
@@ -455,7 +439,6 @@ const APIIntegrations = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {integrations.map((integration, index) => {
           const config = getIntegrationConfig(integration.id);
-          
           return (
             <motion.div
               key={integration.id}
@@ -490,14 +473,12 @@ const APIIntegrations = () => {
                       </span>
                     </div>
                   )}
-                  
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Configurazioni:</span>
                     <span className="font-medium text-neutral-800">
                       {integration.fields.filter(f => config[f.key]).length}/{integration.fields.length} completate
                     </span>
                   </div>
-                  
                   {config.lastError && (
                     <div className="p-2 bg-red-50 rounded-lg">
                       <p className="text-xs text-red-600">{config.lastError}</p>
@@ -518,9 +499,8 @@ const APIIntegrations = () => {
                       {config.active ? 'Attivo' : 'Disattivo'}
                     </span>
                   </label>
-                  
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     icon={FiIcons.FiSettings}
                     onClick={() => setSelectedIntegration(integration)}
                   >

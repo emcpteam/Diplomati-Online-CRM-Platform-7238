@@ -19,8 +19,7 @@ Sconto Applicato: €${student.discount || 0}
 Importo Netto: €${student.totalAmount - (student.discount || 0)}
 
 PAGAMENTO:
-Tipo: ${student.paymentType === 'wire_transfer' ? 'Bonifico' : 
-       student.paymentType === 'installment' ? 'Rateale' : 'Finanziamento'}
+Tipo: ${student.paymentType === 'wire_transfer' ? 'Bonifico' : student.paymentType === 'installment' ? 'Rateale' : 'Finanziamento'}
 Importo Pagato: €${student.paidAmount}
 Rimanente: €${student.totalAmount - student.paidAmount}
 
@@ -28,8 +27,9 @@ Data Iscrizione: ${new Date(student.enrollmentDate).toLocaleDateString('it-IT')}
 
 Diplomati Online Srl
 P.IVA: IT12345678901
+
 Generato il: ${new Date().toLocaleDateString('it-IT')}
-  `;
+`;
 
   return downloadPDF(content, `contratto-${student.firstName}-${student.lastName}.txt`);
 };
@@ -61,8 +61,9 @@ Telefono: +39 02 1234567
 
 Diplomati Online Srl
 P.IVA: IT12345678901
+
 Generato il: ${new Date().toLocaleDateString('it-IT')}
-  `;
+`;
 
   return downloadPDF(content, `preventivo-${quote.studentName.replace(' ', '-')}.txt`);
 };
@@ -79,8 +80,7 @@ Codice Fiscale: ${student.codiceFiscale}
 DETTAGLI PAGAMENTO:
 Importo: €${payment.amount}
 Data: ${new Date(payment.date).toLocaleDateString('it-IT')}
-Metodo: ${payment.method === 'bank_transfer' ? 'Bonifico' : 
-          payment.method === 'card' ? 'Carta' : 'Contanti'}
+Metodo: ${payment.method === 'bank_transfer' ? 'Bonifico' : payment.method === 'card' ? 'Carta' : 'Contanti'}
 
 RIEPILOGO CORSO:
 Importo Totale: €${student.totalAmount}
@@ -90,8 +90,9 @@ Rimanente: €${student.totalAmount - student.paidAmount}
 Diplomati Online Srl
 P.IVA: IT12345678901
 Via Roma 123, Milano
+
 Generato il: ${new Date().toLocaleDateString('it-IT')}
-  `;
+`;
 
   return downloadPDF(content, `ricevuta-${student.firstName}-${student.lastName}-${Date.now()}.txt`);
 };
@@ -122,7 +123,7 @@ PAGAMENTI:
 
 Diplomati Online Srl
 Generato il: ${new Date().toLocaleDateString('it-IT')}
-  `;
+`;
 
   return downloadPDF(content, `report-mensile-${new Date().getMonth() + 1}-${new Date().getFullYear()}.txt`);
 };
@@ -153,13 +154,14 @@ ${subjects.map(subject => `- ${subject}`).join('\n')}
 
 Anno Scolastico: ${new Date().getFullYear()}/${new Date().getFullYear() + 1}
 
-Si richiede gentilmente di procedere con l'iscrizione all'esame di idoneità/maturità
+Si richiede gentilmente di procedere con l'iscrizione all'esame di idoneità/maturità 
 per lo studente sopra indicato.
 
 Diplomati Online Srl
 P.IVA: IT12345678901
+
 Generato il: ${new Date().toLocaleDateString('it-IT')}
-  `;
+`;
 
   return downloadPDF(content, `richiesta-esame-${student.firstName}-${student.lastName}.txt`);
 };

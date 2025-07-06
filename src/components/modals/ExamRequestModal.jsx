@@ -52,10 +52,8 @@ const ExamRequestModal = ({ student, onClose, onRequestCreated }) => {
     }
 
     setLoading(true);
-
     try {
       const selectedSchool = state.schools.find(s => s.id === parseInt(formData.schoolId));
-      
       if (!selectedSchool) {
         throw new Error('Scuola non trovata');
       }

@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
-import SafeIcon from '../utils/SafeIcon';
-import { Card, Button, Input, Badge, Modal } from '../components/UI';
+import SafeIcon from '../common/SafeIcon';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Badge from '../components/ui/Badge';
+import StudentModal from '../components/modals/StudentModal';
+import AssignSchoolModal from '../components/modals/AssignSchoolModal';
 import { useApp } from '../context/AppContext';
 import { generateStudentContract, sendEmail, emailTemplates, exportToCSV } from '../utils';
 import toast from 'react-hot-toast';
@@ -17,12 +22,13 @@ const StudentsManagement = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
+  const [showAssignSchoolModal, setShowAssignSchoolModal] = useState(false);
 
   const filteredStudents = state.students
     .filter(student => {
       const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
+        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
       const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
       return matchesSearch && matchesStatus && matchesCourse;
@@ -59,6 +65,11 @@ const StudentsManagement = () => {
     };
   };
 
+  const getAssignedSchool = (student) => {
+    if (!student.assignedSchool) return null;
+    return state.schools.find(school => school.id === student.assignedSchool);
+  };
+
   const handleExport = () => {
     const data = filteredStudents.map(student => ({
       Nome: student.firstName,
@@ -69,31 +80,34 @@ const StudentsManagement = () => {
       Stato: student.status,
       'Importo Totale': student.totalAmount,
       'Importo Pagato': student.paidAmount,
-      'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT')
+      'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
+      'Scuola Esami': getAssignedSchool(student)?.name || 'Non assegnata'
     }));
-    
+
     exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
     toast.success('Export completato con successo!');
   };
 
   const handleSendEmail = async (student, template) => {
     const toastId = toast.loading('Invio email in corso...');
-    
     try {
       const emailData = emailTemplates[template](student);
       await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
-      
+
       const updatedStudent = {
         ...student,
-        communications: [...(student.communications || []), {
-          id: Date.now(),
-          type: 'email',
-          subject: emailData.subject,
-          sentAt: new Date().toISOString(),
-          status: 'sent'
-        }]
+        communications: [
+          ...(student.communications || []),
+          {
+            id: Date.now(),
+            type: 'email',
+            subject: emailData.subject,
+            sentAt: new Date().toISOString(),
+            status: 'sent'
+          }
+        ]
       };
-      
+
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
@@ -101,94 +115,15 @@ const StudentsManagement = () => {
     }
   };
 
-  const StudentModal = () => {
-    const [formData, setFormData] = useState(selectedStudent || {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      course: '',
-      yearsToRecover: 1,
-      totalAmount: 2800,
-      status: 'active'
-    });
+  const handleAssignSchool = (student) => {
+    setSelectedStudent(student);
+    setShowAssignSchoolModal(true);
+  };
 
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      
-      if (selectedStudent) {
-        dispatch({ type: 'UPDATE_STUDENT', payload: { ...selectedStudent, ...formData } });
-        toast.success('Studente aggiornato con successo!');
-      } else {
-        const newStudent = {
-          ...formData,
-          id: Date.now(),
-          enrollmentDate: new Date().toISOString(),
-          paidAmount: 0,
-          documents: [],
-          communications: []
-        };
-        dispatch({ type: 'ADD_STUDENT', payload: newStudent });
-        toast.success('Studente aggiunto con successo!');
-      }
-      
-      setShowModal(false);
-      setSelectedStudent(null);
-    };
-
-    return (
-      <Modal
-        isOpen={showModal && modalType === 'student'}
-        onClose={() => { setShowModal(false); setSelectedStudent(null); }}
-        title={selectedStudent ? 'Modifica Studente' : 'Nuovo Studente'}
-        size="lg"
-      >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Nome *"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              required
-            />
-            <Input
-              label="Cognome *"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Email *"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-            <Input
-              label="Telefono *"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => { setShowModal(false); setSelectedStudent(null); }}
-            >
-              Annulla
-            </Button>
-            <Button type="submit" icon={FiIcons.FiSave}>
-              {selectedStudent ? 'Salva' : 'Aggiungi'} Studente
-            </Button>
-          </div>
-        </form>
-      </Modal>
+  const handleSchoolAssigned = (updatedStudent) => {
+    const assignedSchool = getAssignedSchool(updatedStudent);
+    toast.success(
+      `Studente assegnato a ${assignedSchool?.name || 'nessuna scuola'} per gli esami!`
     );
   };
 
@@ -210,7 +145,11 @@ const StudentsManagement = () => {
           </Button>
           <Button
             icon={FiIcons.FiPlus}
-            onClick={() => { setModalType('student'); setShowModal(true); }}
+            onClick={() => {
+              setModalType('student');
+              setSelectedStudent(null);
+              setShowModal(true);
+            }}
           >
             Nuovo Studente
           </Button>
@@ -226,7 +165,6 @@ const StudentsManagement = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={FiIcons.FiSearch}
           />
-          
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -237,7 +175,6 @@ const StudentsManagement = () => {
             <option value="suspended">Sospesi</option>
             <option value="completed">Completati</option>
           </select>
-
           <select
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
@@ -248,7 +185,6 @@ const StudentsManagement = () => {
               <option key={course.id} value={course.name}>{course.name}</option>
             ))}
           </select>
-
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -266,7 +202,8 @@ const StudentsManagement = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredStudents.map((student, index) => {
           const paymentProgress = getPaymentProgress(student);
-          
+          const assignedSchool = getAssignedSchool(student);
+
           return (
             <motion.div
               key={student.id}
@@ -298,6 +235,27 @@ const StudentsManagement = () => {
                     <span className="font-medium text-neutral-800">{student.course}</span>
                   </div>
 
+                  {/* School Assignment */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-500">Scuola Esami:</span>
+                    <div className="flex items-center space-x-2">
+                      {assignedSchool ? (
+                        <span className="font-medium text-neutral-800 text-xs">
+                          {assignedSchool.name}
+                        </span>
+                      ) : (
+                        <span className="text-orange-600 text-xs">Non assegnata</span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={assignedSchool ? FiIcons.FiEdit : FiIcons.FiMapPin}
+                        onClick={() => handleAssignSchool(student)}
+                        className="p-1"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-neutral-500">Pagamenti:</span>
@@ -312,6 +270,15 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
+
+                  {student.convertedFromLead && (
+                    <div className="flex items-center space-x-2">
+                      <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
+                      <span className="text-xs text-accent-600 font-medium">
+                        Convertito da Lead
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -375,7 +342,11 @@ const StudentsManagement = () => {
           </p>
           <Button
             icon={FiIcons.FiPlus}
-            onClick={() => { setModalType('student'); setShowModal(true); }}
+            onClick={() => {
+              setModalType('student');
+              setSelectedStudent(null);
+              setShowModal(true);
+            }}
           >
             Aggiungi Primo Studente
           </Button>
@@ -383,11 +354,32 @@ const StudentsManagement = () => {
       )}
 
       {/* Modals */}
-      <StudentModal />
+      <AnimatePresence>
+        {showModal && modalType === 'student' && (
+          <StudentModal
+            student={selectedStudent}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedStudent(null);
+            }}
+            mode={selectedStudent ? 'edit' : 'add'}
+          />
+        )}
+        {showAssignSchoolModal && selectedStudent && (
+          <AssignSchoolModal
+            student={selectedStudent}
+            onClose={() => {
+              setShowAssignSchoolModal(false);
+              setSelectedStudent(null);
+            }}
+            onAssign={handleSchoolAssigned}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Stats Footer */}
       <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 text-center">
           <div>
             <p className="text-2xl font-bold text-neutral-800">{state.students.length}</p>
             <p className="text-sm text-neutral-500">Totale Studenti</p>
@@ -409,6 +401,12 @@ const StudentsManagement = () => {
               €{state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
             </p>
             <p className="text-sm text-neutral-500">Da Incassare</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-secondary-600">
+              {state.students.filter(s => s.assignedSchool).length}
+            </p>
+            <p className="text-sm text-neutral-500">Con Scuola Esami</p>
           </div>
         </div>
       </Card>

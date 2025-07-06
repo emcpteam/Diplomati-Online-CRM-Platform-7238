@@ -37,6 +37,7 @@ export const uploadFile = async (file, type = 'general') => {
         });
       }, 1000);
     };
+    
     reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
   });

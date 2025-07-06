@@ -12,12 +12,10 @@ const DocumentUploadModal = ({ onClose, onUpload, title = "Carica Documento", ac
 
   const handleFileSelect = (file) => {
     const errors = validateFile(file, 10 * 1024 * 1024, acceptedTypes);
-    
     if (errors.length > 0) {
       toast.error(errors[0]);
       return;
     }
-
     setSelectedFile(file);
   };
 
@@ -35,7 +33,7 @@ const DocumentUploadModal = ({ onClose, onUpload, title = "Carica Documento", ac
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
+    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
@@ -52,7 +50,7 @@ const DocumentUploadModal = ({ onClose, onUpload, title = "Carica Documento", ac
 
     try {
       const uploadResult = await uploadFile(selectedFile, 'document');
-      
+
       const document = {
         id: Date.now(),
         name: selectedFile.name,
@@ -166,8 +164,8 @@ const DocumentUploadModal = ({ onClose, onUpload, title = "Carica Documento", ac
             <Button variant="outline" onClick={onClose}>
               Annulla
             </Button>
-            <Button 
-              icon={FiIcons.FiUpload} 
+            <Button
+              icon={FiIcons.FiUpload}
               onClick={handleUpload}
               loading={uploading}
               disabled={!selectedFile}

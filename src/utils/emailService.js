@@ -18,30 +18,6 @@ export const sendEmail = async (to, subject, content, settings) => {
   });
 };
 
-export const sendSMS = async (to, message, settings) => {
-  // Simulate SMS sending via Skebby
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (!to || !message) {
-        reject(new Error('Missing SMS parameters'));
-        return;
-      }
-
-      if (!settings.username || !settings.password) {
-        reject(new Error('Skebby credentials not configured'));
-        return;
-      }
-
-      console.log('SMS sent via Skebby:', { to, message, settings });
-      resolve({
-        success: true,
-        messageId: `sms_${Date.now()}`,
-        timestamp: new Date().toISOString()
-      });
-    }, 1000);
-  });
-};
-
 export const emailTemplates = {
   welcome: (student) => ({
     subject: `Benvenuto nel corso ${student.course}!`,
@@ -64,7 +40,7 @@ Per qualsiasi domanda, non esitare a contattarci:
 
 Cordiali saluti,
 Il team di Diplomati Online
-    `
+`
   }),
 
   paymentReminder: (student) => ({
@@ -87,7 +63,7 @@ Per pagare puoi:
 
 Grazie per la collaborazione,
 Il team di Diplomati Online
-    `
+`
   }),
 
   examPreparation: (student) => ({
@@ -108,9 +84,8 @@ CONTATTI EMERGENZA:
 - WhatsApp: +39 320 1234567
 
 In bocca al lupo per il tuo esame!
-
 Il team di Diplomati Online
-    `
+`
   }),
 
   congratulations: (student) => ({
@@ -127,9 +102,8 @@ Siamo orgogliosi del tuo successo e ti auguriamo il meglio per il tuo futuro.
 Il diploma ufficiale ti verrà recapitato nei prossimi giorni.
 
 Un caloroso saluto e ancora congratulazioni!
-
 Il team di Diplomati Online
-    `
+`
   }),
 
   leadWelcome: (lead) => ({
@@ -150,7 +124,7 @@ Nel frattempo, puoi visitare il nostro sito per scoprire di più sui nostri serv
 
 A presto!
 Il team di Diplomati Online
-    `
+`
   }),
 
   leadFollowUp: (lead) => ({
@@ -171,16 +145,6 @@ Rispondi a questa email o chiamaci al +39 02 1234567 entro 7 giorni per non perd
 
 Cordiali saluti,
 Il team di Diplomati Online
-    `
+`
   })
-};
-
-export const smsTemplates = {
-  welcome: (lead) => `Ciao ${lead.firstName}! Grazie per l'interesse in Diplomati Online. Ti contatteremo presto per il corso ${lead.studyPlan}. Info: 02-1234567`,
-  
-  reminder: (lead) => `Ciao ${lead.firstName}, non dimenticare la tua richiesta per ${lead.studyPlan}! Chiamaci per un preventivo gratuito: 02-1234567`,
-  
-  appointment: (student, date) => `Ciao ${student.firstName}, promemoria appuntamento ${date}. Per info: 02-1234567`,
-  
-  payment: (student) => `Ciao ${student.firstName}, promemoria pagamento corso. Rimanente: €${student.totalAmount - student.paidAmount}. Info: 02-1234567`
 };

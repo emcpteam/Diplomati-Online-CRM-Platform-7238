@@ -10,6 +10,10 @@ import toast from 'react-hot-toast';
 
 const InternalTools = () => {
   const [activeTab, setActiveTab] = useState('course-creation');
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [modalMode, setModalMode] = useState('add');
+
   const [courseProgress, setCourseProgress] = useState({
     name: 'Diploma Turistico',
     progress: 75,
@@ -18,17 +22,20 @@ const InternalTools = () => {
       { id: 2, name: 'Creazione contenuti', completed: true, deadline: '2024-01-20' },
       { id: 3, name: 'Setup piattaforma', completed: true, deadline: '2024-01-25' },
       { id: 4, name: 'Test funzionalità', completed: false, deadline: '2024-01-30' },
-      { id: 5, name: 'Pubblicazione', completed: false, deadline: '2024-02-01' },
+      { id: 5, name: 'Pubblicazione', completed: false, deadline: '2024-02-01' }
     ]
   });
 
   const [autocompleteFields, setAutocompleteFields] = useState({
     subjects: ['Matematica', 'Fisica', 'Chimica', 'Biologia', 'Italiano', 'Storia', 'Filosofia', 'Inglese', 'Francese', 'Spagnolo'],
     courses: ['Diploma Scientifico', 'Diploma Linguistico', 'Diploma Tecnico', 'Diploma Classico'],
-    cities: ['Roma', 'Milano', 'Napoli', 'Torino', 'Palermo', 'Genova', 'Bologna', 'Firenze'],
+    cities: ['Roma', 'Milano', 'Napoli', 'Torino', 'Palermo', 'Genova', 'Bologna', 'Firenze']
   });
 
-  const [newField, setNewField] = useState({ category: 'subjects', value: '' });
+  const [newField, setNewField] = useState({
+    category: 'subjects',
+    value: ''
+  });
 
   const tabs = [
     { id: 'course-creation', label: 'Creazione Corsi', icon: FiIcons.FiBookOpen },
@@ -37,17 +44,157 @@ const InternalTools = () => {
     { id: 'import-export', label: 'Import/Export', icon: FiIcons.FiDatabase },
     { id: 'pdf-tools', label: 'Strumenti PDF', icon: FiIcons.FiFileText },
     { id: 'file-repository', label: 'Repository File', icon: FiIcons.FiFolderOpen },
-    { id: 'versioning', label: 'Versioning', icon: FiIcons.FiGitCommit },
+    { id: 'versioning', label: 'Versioning', icon: FiIcons.FiGitCommit }
   ];
+
+  const handleAddActivity = () => {
+    setSelectedActivity(null);
+    setModalMode('add');
+    setShowActivityModal(true);
+  };
+
+  const handleEditActivity = (activity) => {
+    setSelectedActivity(activity);
+    setModalMode('edit');
+    setShowActivityModal(true);
+  };
+
+  const handleDeleteActivity = (activityId) => {
+    if (window.confirm('Sei sicuro di voler eliminare questa attività?')) {
+      setCourseProgress(prev => ({
+        ...prev,
+        tasks: prev.tasks.filter(task => task.id !== activityId)
+      }));
+      toast.success('Attività eliminata con successo!');
+    }
+  };
+
+  const handleToggleActivity = (activityId) => {
+    setCourseProgress(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(task =>
+        task.id === activityId ? { ...task, completed: !task.completed } : task
+      )
+    }));
+    toast.success('Stato attività aggiornato!');
+  };
+
+  const ActivityModal = () => {
+    const [formData, setFormData] = useState({
+      name: selectedActivity?.name || '',
+      deadline: selectedActivity?.deadline || '',
+      completed: selectedActivity?.completed || false
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      
+      if (!formData.name.trim() || !formData.deadline) {
+        toast.error('Compila tutti i campi obbligatori');
+        return;
+      }
+
+      if (modalMode === 'add') {
+        const newActivity = {
+          id: Date.now(),
+          ...formData
+        };
+        setCourseProgress(prev => ({
+          ...prev,
+          tasks: [...prev.tasks, newActivity]
+        }));
+        toast.success('Attività aggiunta con successo!');
+      } else {
+        setCourseProgress(prev => ({
+          ...prev,
+          tasks: prev.tasks.map(task =>
+            task.id === selectedActivity.id ? { ...task, ...formData } : task
+          )
+        }));
+        toast.success('Attività aggiornata con successo!');
+      }
+
+      setShowActivityModal(false);
+      setSelectedActivity(null);
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={() => setShowActivityModal(false)}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-white rounded-2xl shadow-strong max-w-md w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-6 border-b border-neutral-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-neutral-800">
+                {modalMode === 'add' ? 'Nuova Attività' : 'Modifica Attività'}
+              </h2>
+              <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowActivityModal(false)} />
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <Input
+              label="Nome Attività *"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Inserisci nome attività"
+              required
+            />
+
+            <Input
+              label="Scadenza *"
+              type="date"
+              value={formData.deadline}
+              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              required
+            />
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="completed"
+                checked={formData.completed}
+                onChange={(e) => setFormData({ ...formData, completed: e.target.checked })}
+                className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+              />
+              <label htmlFor="completed" className="text-sm font-medium text-neutral-700">
+                Attività completata
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowActivityModal(false)}
+              >
+                Annulla
+              </Button>
+              <Button type="submit" icon={FiIcons.FiSave}>
+                {modalMode === 'add' ? 'Aggiungi' : 'Salva'}
+              </Button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    );
+  };
 
   const handleAddAutocompleteField = () => {
     if (!newField.value.trim()) return;
-    
+
     setAutocompleteFields(prev => ({
       ...prev,
       [newField.category]: [...prev[newField.category], newField.value]
     }));
-    
     setNewField({ ...newField, value: '' });
     toast.success('Campo aggiunto con successo!');
   };
@@ -66,10 +213,18 @@ const InternalTools = () => {
         return (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-                Corso in Creazione: {courseProgress.name}
-              </h3>
-              
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-neutral-800">
+                  Corso in Creazione: {courseProgress.name}
+                </h3>
+                <Button
+                  icon={FiIcons.FiPlus}
+                  onClick={handleAddActivity}
+                >
+                  Nuova Attività
+                </Button>
+              </div>
+
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-neutral-500">Progresso Completamento</span>
@@ -84,29 +239,57 @@ const InternalTools = () => {
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-medium text-neutral-800">Lista Attività</h4>
+                <h4 className="font-medium text-neutral-800">Lista Attività ({courseProgress.tasks.length})</h4>
                 {courseProgress.tasks.map((task) => (
                   <div key={task.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        task.completed ? 'bg-accent-500' : 'bg-neutral-300'
-                      }`}>
+                      <button
+                        onClick={() => handleToggleActivity(task.id)}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                          task.completed ? 'bg-accent-500' : 'bg-neutral-300 hover:bg-neutral-400'
+                        }`}
+                      >
                         {task.completed && (
                           <SafeIcon icon={FiIcons.FiCheck} className="w-4 h-4 text-white" />
                         )}
-                      </div>
+                      </button>
                       <div>
-                        <p className={`font-medium ${task.completed ? 'text-neutral-600 line-through' : 'text-neutral-800'}`}>
+                        <p className={`font-medium ${
+                          task.completed ? 'text-neutral-600 line-through' : 'text-neutral-800'
+                        }`}>
                           {task.name}
                         </p>
                         <p className="text-sm text-neutral-500">Scadenza: {task.deadline}</p>
                       </div>
                     </div>
-                    <Badge variant={task.completed ? 'success' : 'warning'}>
-                      {task.completed ? 'Completata' : 'In corso'}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={task.completed ? 'success' : 'warning'}>
+                        {task.completed ? 'Completata' : 'In corso'}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={FiIcons.FiEdit}
+                        onClick={() => handleEditActivity(task)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={FiIcons.FiTrash2}
+                        onClick={() => handleDeleteActivity(task.id)}
+                        className="text-red-600 hover:text-red-700"
+                      />
+                    </div>
                   </div>
                 ))}
+                {courseProgress.tasks.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-neutral-500 mb-4">Nessuna attività presente</p>
+                    <Button icon={FiIcons.FiPlus} onClick={handleAddActivity}>
+                      Aggiungi Prima Attività
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -123,7 +306,7 @@ const InternalTools = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <select
                   value={newField.category}
-                  onChange={(e) => setNewField({...newField, category: e.target.value})}
+                  onChange={(e) => setNewField({ ...newField, category: e.target.value })}
                   className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="subjects">Materie</option>
@@ -133,7 +316,7 @@ const InternalTools = () => {
                 <Input
                   placeholder="Nuovo valore..."
                   value={newField.value}
-                  onChange={(e) => setNewField({...newField, value: e.target.value})}
+                  onChange={(e) => setNewField({ ...newField, value: e.target.value })}
                 />
                 <Button icon={FiIcons.FiPlus} onClick={handleAddAutocompleteField}>
                   Aggiungi
@@ -178,7 +361,7 @@ const InternalTools = () => {
                     {[
                       { name: 'Marco Bianchi', days: 45, source: 'Google Ads' },
                       { name: 'Anna Rossi', days: 38, source: 'Facebook' },
-                      { name: 'Luigi Verdi', days: 52, source: 'Instagram' },
+                      { name: 'Luigi Verdi', days: 52, source: 'Instagram' }
                     ].map((lead, index) => (
                       <div key={index} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
                         <div>
@@ -197,7 +380,7 @@ const InternalTools = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium text-neutral-800">Azioni Automatiche</h4>
                   <div className="grid grid-cols-1 gap-4">
@@ -242,7 +425,7 @@ const InternalTools = () => {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium text-neutral-800">Esporta Dati</h4>
                   <div className="space-y-3">
@@ -306,13 +489,13 @@ const InternalTools = () => {
                   { name: 'Documenti Scuole', files: 23, size: '8.7 MB', type: 'folder' },
                   { name: 'Template Email', files: 15, size: '2.1 MB', type: 'folder' },
                   { name: 'Backup Database', files: 1, size: '156.8 MB', type: 'file' },
-                  { name: 'Log Sistema', files: 30, size: '45.2 MB', type: 'folder' },
+                  { name: 'Log Sistema', files: 30, size: '45.2 MB', type: 'folder' }
                 ].map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
                     <div className="flex items-center space-x-3">
-                      <SafeIcon 
-                        icon={item.type === 'folder' ? FiIcons.FiFolderOpen : FiIcons.FiFile} 
-                        className="w-6 h-6 text-primary-600" 
+                      <SafeIcon
+                        icon={item.type === 'folder' ? FiIcons.FiFolderOpen : FiIcons.FiFile}
+                        className="w-6 h-6 text-primary-600"
                       />
                       <div>
                         <p className="font-medium text-neutral-800">{item.name}</p>
@@ -354,13 +537,13 @@ const InternalTools = () => {
                       Rilasciato il 20 Gennaio 2024
                     </p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h4 className="font-medium text-neutral-800">Storico Versioni</h4>
                     {[
                       { version: 'v0.9.5', date: '15 Gen 2024', changes: 'Bugfix sistema pagamenti' },
                       { version: 'v0.9.0', date: '10 Gen 2024', changes: 'Aggiunto modulo lead management' },
-                      { version: 'v0.8.0', date: '05 Gen 2024', changes: 'Implementate integrazioni API' },
+                      { version: 'v0.8.0', date: '05 Gen 2024', changes: 'Implementate integrazioni API' }
                     ].map((release, index) => (
                       <div key={index} className="p-3 bg-neutral-50 rounded-xl">
                         <div className="flex items-center justify-between">
@@ -372,7 +555,7 @@ const InternalTools = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="font-medium text-neutral-800">Strumenti Sviluppo</h4>
                   <div className="space-y-3">
@@ -389,7 +572,7 @@ const InternalTools = () => {
                       Debug Mode
                     </Button>
                   </div>
-                  
+
                   <div className="p-4 bg-neutral-50 rounded-xl mt-6">
                     <h5 className="font-medium text-neutral-800 mb-2">Informazioni Sistema</h5>
                     <div className="space-y-2 text-sm">
@@ -430,14 +613,6 @@ const InternalTools = () => {
             Strumenti avanzati per la gestione e configurazione del sistema
           </p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button variant="outline" icon={FiIcons.FiSettings}>
-            Configurazioni
-          </Button>
-          <Button icon={FiIcons.FiTool}>
-            Nuova Utility
-          </Button>
-        </div>
       </div>
 
       {/* Tabs */}
@@ -469,6 +644,9 @@ const InternalTools = () => {
       >
         {renderTabContent()}
       </motion.div>
+
+      {/* Activity Modal */}
+      {showActivityModal && <ActivityModal />}
     </div>
   );
 };

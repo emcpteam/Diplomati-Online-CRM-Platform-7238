@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import Card from '../components/ui/Card';
@@ -8,15 +9,16 @@ import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import LeadNoteModal from '../components/modals/LeadNoteModal';
 import LeadReminderModal from '../components/modals/LeadReminderModal';
-import LeadSMSModal from '../components/modals/LeadSMSModal';
 import LeadEmailModal from '../components/modals/LeadEmailModal';
+import ConvertLeadModal from '../components/modals/ConvertLeadModal';
 import { useApp } from '../context/AppContext';
 import { generateQuotePDF } from '../utils/pdfGenerator';
-import { sendEmail, sendSMS } from '../utils/emailService';
+import { sendEmail } from '../utils/emailService';
 import toast from 'react-hot-toast';
 
 const LeadManagement = () => {
   const { state, dispatch } = useApp();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedLead, setSelectedLead] = useState(null);
@@ -24,14 +26,14 @@ const LeadManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
-  const [showSMSModal, setShowSMSModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
 
   const filteredLeads = state.leads
     .filter(lead => {
       const matchesSearch = lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+        lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || lead.status === filterStatus;
       return matchesSearch && matchesStatus;
     })
@@ -70,9 +72,23 @@ const LeadManagement = () => {
     }
   };
 
+  const handleConvertLead = (lead) => {
+    setSelectedLead(lead);
+    setShowConvertModal(true);
+  };
+
+  const handleConvertSuccess = (newStudent) => {
+    toast.success(`Lead convertito! Vai alla pagina studente?`, {
+      action: {
+        label: 'Vai allo Studente',
+        onClick: () => navigate(`/students/${newStudent.id}`)
+      },
+      duration: 6000
+    });
+  };
+
   const handleSyncZapier = () => {
     toast.loading('Sincronizzazione in corso...', { id: 'sync' });
-    
     setTimeout(() => {
       const newLeads = [
         {
@@ -125,7 +141,6 @@ const LeadManagement = () => {
     link.download = `lead-export-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-
     toast.success('Export completato con successo!');
   };
 
@@ -252,7 +267,6 @@ const LeadManagement = () => {
                 value={formData.yearsToRecover}
                 onChange={(e) => setFormData({ ...formData, yearsToRecover: parseInt(e.target.value) })}
               />
-              
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Disponibilità</label>
                 <select
@@ -266,7 +280,6 @@ const LeadManagement = () => {
                   <option value="Weekend">Weekend</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Fonte</label>
                 <select
@@ -295,7 +308,11 @@ const LeadManagement = () => {
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
-              <Button variant="outline" type="button" onClick={() => setShowAddModal(false)}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowAddModal(false)}
+              >
                 Annulla
               </Button>
               <Button type="submit" icon={FiIcons.FiSave}>
@@ -316,7 +333,6 @@ const LeadManagement = () => {
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       promoPrice: 0,
       basePrice: 2800,
-      // Hybrid payment fields
       advancePayment: 0,
       installments: 12,
       installmentAmount: 0,
@@ -324,7 +340,6 @@ const LeadManagement = () => {
       endDate: ''
     });
 
-    // Update installment amount when values change
     React.useEffect(() => {
       if (quote.paymentMethod === 'hybrid' && quote.installments > 0) {
         const remaining = (quote.basePrice - quote.promoPrice - quote.advancePayment);
@@ -335,7 +350,6 @@ const LeadManagement = () => {
       }
     }, [quote.basePrice, quote.promoPrice, quote.advancePayment, quote.installments, quote.paymentMethod]);
 
-    // Update base price when course changes
     const handleCourseChange = (courseName) => {
       const selectedCourse = state.courses.find(c => c.name === courseName);
       setQuote(prev => ({
@@ -386,7 +400,6 @@ const LeadManagement = () => {
                 value={quote.studentName}
                 onChange={(e) => setQuote({ ...quote, studentName: e.target.value })}
               />
-              
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Corso *</label>
                 <select
@@ -420,7 +433,6 @@ const LeadManagement = () => {
                   />
                   <span>Bonifico Completo</span>
                 </label>
-                
                 <label className="flex items-center space-x-3">
                   <input
                     type="radio"
@@ -432,7 +444,6 @@ const LeadManagement = () => {
                   />
                   <span>Finanziamento Banca Sella</span>
                 </label>
-                
                 <label className="flex items-center space-x-3">
                   <input
                     type="radio"
@@ -447,11 +458,9 @@ const LeadManagement = () => {
               </div>
             </div>
 
-            {/* Hybrid Payment Details */}
             {quote.paymentMethod === 'hybrid' && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 space-y-4">
                 <h4 className="font-medium text-blue-800">Configurazione Piano Ibrido</h4>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Anticipo (€)"
@@ -461,7 +470,6 @@ const LeadManagement = () => {
                     min="0"
                     max={quote.basePrice - quote.promoPrice}
                   />
-                  
                   <Input
                     label="Numero Rate"
                     type="number"
@@ -471,25 +479,6 @@ const LeadManagement = () => {
                     max="36"
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Data Inizio Pagamenti"
-                    type="date"
-                    value={quote.startDate}
-                    onChange={(e) => setQuote({ ...quote, startDate: e.target.value })}
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                  
-                  <Input
-                    label="Data Fine Pagamenti"
-                    type="date"
-                    value={quote.endDate}
-                    onChange={(e) => setQuote({ ...quote, endDate: e.target.value })}
-                    min={quote.startDate}
-                  />
-                </div>
-
                 <div className="bg-white rounded-lg p-4">
                   <h5 className="font-medium text-neutral-800 mb-2">Riepilogo Piano Ibrido</h5>
                   <div className="space-y-2 text-sm">
@@ -505,10 +494,6 @@ const LeadManagement = () => {
                       <span>Importo per rata:</span>
                       <span className="font-medium">€{quote.installmentAmount}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Numero rate:</span>
-                      <span className="font-medium">{quote.installments}</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -521,7 +506,6 @@ const LeadManagement = () => {
                 value={quote.validUntil}
                 onChange={(e) => setQuote({ ...quote, validUntil: e.target.value })}
               />
-              
               <Input
                 label="Sconto Promo (€)"
                 type="number"
@@ -600,7 +584,6 @@ const LeadManagement = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={FiIcons.FiSearch}
           />
-          
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -614,7 +597,6 @@ const LeadManagement = () => {
             <option value="da_ricontattare">Da Ricontattare</option>
             <option value="lost">Persi</option>
           </select>
-          
           <Button variant="outline" icon={FiIcons.FiFilter}>
             Filtri Avanzati
           </Button>
@@ -653,22 +635,14 @@ const LeadManagement = () => {
                   <span className="text-neutral-500">Piano di studi:</span>
                   <span className="font-medium text-neutral-800">{lead.studyPlan}</span>
                 </div>
-                
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Anni da recuperare:</span>
                   <span className="font-medium text-neutral-800">{lead.yearsToRecover}</span>
                 </div>
-                
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Città:</span>
                   <span className="font-medium text-neutral-800">{lead.city}</span>
                 </div>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-neutral-500">Disponibilità:</span>
-                  <span className="font-medium text-neutral-800">{lead.availableTime}</span>
-                </div>
-                
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Fonte:</span>
                   <div className="flex items-center space-x-2">
@@ -676,22 +650,12 @@ const LeadManagement = () => {
                     <span className="font-medium text-neutral-800">{lead.source}</span>
                   </div>
                 </div>
-                
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Ricevuto:</span>
                   <span className="font-medium text-neutral-800">
                     {new Date(lead.createdAt).toLocaleDateString('it-IT')}
                   </span>
                 </div>
-
-                {lead.reminder && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500">Promemoria:</span>
-                    <span className="font-medium text-orange-600">
-                      {new Date(lead.reminder.datetime).toLocaleString('it-IT')}
-                    </span>
-                  </div>
-                )}
               </div>
 
               {/* Action Buttons */}
@@ -705,7 +669,6 @@ const LeadManagement = () => {
                   >
                     Chiama
                   </Button>
-                  
                   <Button
                     variant="ghost"
                     size="sm"
@@ -717,19 +680,6 @@ const LeadManagement = () => {
                   >
                     Email
                   </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={FiIcons.FiMessageSquare}
-                    onClick={() => {
-                      setSelectedLead(lead);
-                      setShowSMSModal(true);
-                    }}
-                  >
-                    SMS
-                  </Button>
-                  
                   <Button
                     variant="ghost"
                     size="sm"
@@ -741,9 +691,6 @@ const LeadManagement = () => {
                   >
                     Preventivo
                   </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 mb-3">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -754,18 +701,6 @@ const LeadManagement = () => {
                     }}
                   >
                     Note
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={FiIcons.FiClock}
-                    onClick={() => {
-                      setSelectedLead(lead);
-                      setShowReminderModal(true);
-                    }}
-                  >
-                    Promemoria
                   </Button>
                 </div>
 
@@ -782,6 +717,32 @@ const LeadManagement = () => {
                     <option value="da_ricontattare">Da Ricontattare</option>
                     <option value="lost">Perso</option>
                   </select>
+
+                  {lead.status !== 'converted' ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={FiIcons.FiUserCheck}
+                      onClick={() => handleConvertLead(lead)}
+                      className="text-accent-600 hover:text-accent-700"
+                    >
+                      Converti
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={FiIcons.FiExternalLink}
+                      onClick={() => {
+                        if (lead.convertedToStudentId) {
+                          navigate(`/students/${lead.convertedToStudentId}`);
+                        }
+                      }}
+                      className="text-primary-600 hover:text-primary-700"
+                    >
+                      Studente
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -810,7 +771,6 @@ const LeadManagement = () => {
       {/* Modals */}
       <AnimatePresence>
         {showAddModal && <AddLeadModal />}
-        
         {showQuoteBuilder && selectedLead && (
           <QuoteBuilder
             lead={selectedLead}
@@ -820,7 +780,6 @@ const LeadManagement = () => {
             }}
           />
         )}
-
         {showNoteModal && selectedLead && (
           <LeadNoteModal
             lead={selectedLead}
@@ -833,7 +792,6 @@ const LeadManagement = () => {
             }}
           />
         )}
-
         {showReminderModal && selectedLead && (
           <LeadReminderModal
             lead={selectedLead}
@@ -846,20 +804,6 @@ const LeadManagement = () => {
             }}
           />
         )}
-
-        {showSMSModal && selectedLead && (
-          <LeadSMSModal
-            lead={selectedLead}
-            onClose={() => {
-              setShowSMSModal(false);
-              setSelectedLead(null);
-            }}
-            onSmsSent={(updatedLead, communication) => {
-              dispatch({ type: 'UPDATE_LEAD', payload: updatedLead });
-            }}
-          />
-        )}
-
         {showEmailModal && selectedLead && (
           <LeadEmailModal
             lead={selectedLead}
@@ -870,6 +814,16 @@ const LeadManagement = () => {
             onEmailSent={(updatedLead, communication) => {
               dispatch({ type: 'UPDATE_LEAD', payload: updatedLead });
             }}
+          />
+        )}
+        {showConvertModal && selectedLead && (
+          <ConvertLeadModal
+            lead={selectedLead}
+            onClose={() => {
+              setShowConvertModal(false);
+              setSelectedLead(null);
+            }}
+            onConvert={handleConvertSuccess}
           />
         )}
       </AnimatePresence>
@@ -900,13 +854,13 @@ const LeadManagement = () => {
             <p className="text-sm text-neutral-500">Qualificati</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-orange-600">
-              {state.leads.filter(l => l.status === 'da_ricontattare').length}
+            <p className="text-2xl font-bold text-secondary-600">
+              {state.leads.filter(l => l.status === 'converted').length}
             </p>
-            <p className="text-sm text-neutral-500">Da Ricontattare</p>
+            <p className="text-sm text-neutral-500">Convertiti</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-secondary-600">
+            <p className="text-2xl font-bold text-orange-600">
               {state.leads.length > 0 ? ((state.leads.filter(l => l.status === 'converted').length / state.leads.length) * 100).toFixed(1) : 0}%
             </p>
             <p className="text-sm text-neutral-500">Tasso Conversione</p>

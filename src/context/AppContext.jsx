@@ -25,7 +25,7 @@ const initialState = {
     pec: 'pec@diplomatonline.it',
     phone: '+39 02 1234567',
     whatsapp: '+39 320 1234567',
-    notes: 'Azienda leader nella formazione online per il recupero anni scolastici',
+    notes: 'Azienda leader nella formazione online per il recupero anni scolastici'
   },
   users: [
     {
@@ -36,7 +36,7 @@ const initialState = {
       status: 'active',
       lastLogin: new Date().toISOString(),
       permissions: ['all'],
-      avatar: null,
+      avatar: null
     }
   ],
   students: [],
@@ -59,59 +59,46 @@ const initialState = {
       smtpUser: 'noreply@diplomatonline.it',
       smtpPassword: '',
       fromEmail: 'noreply@diplomatonline.it',
-      fromName: 'Diplomati Online',
-    },
-    smsSettings: {
-      provider: 'skebby',
-      apiKey: '',
-      username: '',
-      password: '',
-      sender: 'DiplomatiOnline',
+      fromName: 'Diplomati Online'
     },
     integrations: {
       zapier: {
         active: false,
         apiKey: '',
         webhookUrl: '',
-        lastSync: null,
+        lastSync: null
       },
       openai: {
         active: false,
         apiKey: '',
         model: 'gpt-4',
         maxTokens: 1000,
-        temperature: 0.7,
+        temperature: 0.7
       },
       meta: {
         active: false,
         pixelId: '',
         accessToken: '',
-        testMode: false,
+        testMode: false
       },
       gtm: {
         active: false,
         containerId: '',
         trackingId: '',
-        enhancedEcommerce: true,
+        enhancedEcommerce: true
       },
       facebook: {
         active: false,
         pixelId: '',
         advancedMatching: true,
-        automaticEvents: true,
+        automaticEvents: true
       },
       smtp: {
         active: false,
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
-        username: 'noreply@diplomatonline.it',
-      },
-      skebby: {
-        active: false,
-        username: '',
-        password: '',
-        sender: 'DiplomatiOnline',
+        username: 'noreply@diplomatonline.it'
       }
     }
   }
@@ -121,68 +108,38 @@ function appReducer(state, action) {
   switch (action.type) {
     // Authentication Actions
     case 'LOGIN':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true
-      };
-
+      return { ...state, user: action.payload, isAuthenticated: true };
     case 'LOGOUT':
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false
-      };
-
+      return { ...state, user: null, isAuthenticated: false };
     case 'SET_USER':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true
-      };
-
+      return { ...state, user: action.payload, isAuthenticated: true };
     case 'CHECK_AUTH':
-      return {
-        ...state,
-        isAuthenticated: action.payload.isAuthenticated,
-        user: action.payload.user
+      return { 
+        ...state, 
+        isAuthenticated: action.payload.isAuthenticated, 
+        user: action.payload.user 
       };
 
     // User Actions
     case 'ADD_USER':
-      return {
-        ...state,
-        users: [...state.users, action.payload]
-      };
-
+      return { ...state, users: [...state.users, action.payload] };
     case 'UPDATE_USER':
       return {
         ...state,
-        users: state.users.map(user => 
+        users: state.users.map(user =>
           user.id === action.payload.id ? { ...user, ...action.payload } : user
         )
       };
-
     case 'DELETE_USER':
-      return {
-        ...state,
-        users: state.users.filter(user => user.id !== action.payload)
-      };
+      return { ...state, users: state.users.filter(user => user.id !== action.payload) };
 
     // Company Actions
     case 'SET_COMPANY':
-      return {
-        ...state,
-        company: { ...state.company, ...action.payload }
-      };
+      return { ...state, company: { ...state.company, ...action.payload } };
 
     // Settings Actions
     case 'SET_SETTINGS':
-      return {
-        ...state,
-        settings: { ...state.settings, ...action.payload }
-      };
-
+      return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'UPDATE_INTEGRATION':
       return {
         ...state,
@@ -200,212 +157,130 @@ function appReducer(state, action) {
 
     // Student Actions
     case 'ADD_STUDENT':
-      return {
-        ...state,
-        students: [...state.students, action.payload]
-      };
-
+      return { ...state, students: [...state.students, action.payload] };
     case 'UPDATE_STUDENT':
       return {
         ...state,
-        students: state.students.map(student => 
+        students: state.students.map(student =>
           student.id === action.payload.id ? { ...student, ...action.payload } : student
         )
       };
-
     case 'DELETE_STUDENT':
-      return {
-        ...state,
-        students: state.students.filter(student => student.id !== action.payload)
-      };
+      return { ...state, students: state.students.filter(student => student.id !== action.payload) };
 
     // School Actions
     case 'ADD_SCHOOL':
-      return {
-        ...state,
-        schools: [...state.schools, action.payload]
-      };
-
+      return { ...state, schools: [...state.schools, action.payload] };
     case 'UPDATE_SCHOOL':
       return {
         ...state,
-        schools: state.schools.map(school => 
+        schools: state.schools.map(school =>
           school.id === action.payload.id ? { ...school, ...action.payload } : school
         )
       };
-
     case 'DELETE_SCHOOL':
-      return {
-        ...state,
-        schools: state.schools.filter(school => school.id !== action.payload)
-      };
+      return { ...state, schools: state.schools.filter(school => school.id !== action.payload) };
 
     // Course Actions
     case 'ADD_COURSE':
-      return {
-        ...state,
-        courses: [...state.courses, action.payload]
-      };
-
+      return { ...state, courses: [...state.courses, action.payload] };
     case 'UPDATE_COURSE':
       return {
         ...state,
-        courses: state.courses.map(course => 
+        courses: state.courses.map(course =>
           course.id === action.payload.id ? { ...course, ...action.payload } : course
         )
       };
-
     case 'DELETE_COURSE':
-      return {
-        ...state,
-        courses: state.courses.filter(course => course.id !== action.payload)
-      };
+      return { ...state, courses: state.courses.filter(course => course.id !== action.payload) };
 
     // Lead Actions
     case 'ADD_LEAD':
-      return {
-        ...state,
-        leads: [...state.leads, action.payload]
-      };
-
+      return { ...state, leads: [...state.leads, action.payload] };
     case 'UPDATE_LEAD':
       return {
         ...state,
-        leads: state.leads.map(lead => 
+        leads: state.leads.map(lead =>
           lead.id === action.payload.id ? { ...lead, ...action.payload } : lead
         )
       };
-
     case 'DELETE_LEAD':
-      return {
-        ...state,
-        leads: state.leads.filter(lead => lead.id !== action.payload)
-      };
+      return { ...state, leads: state.leads.filter(lead => lead.id !== action.payload) };
 
     // Task Actions
     case 'ADD_TASK':
-      return {
-        ...state,
-        tasks: [...state.tasks, action.payload]
-      };
-
+      return { ...state, tasks: [...state.tasks, action.payload] };
     case 'UPDATE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(task => 
+        tasks: state.tasks.map(task =>
           task.id === action.payload.id ? { ...task, ...action.payload } : task
         )
       };
-
     case 'DELETE_TASK':
-      return {
-        ...state,
-        tasks: state.tasks.filter(task => task.id !== action.payload)
-      };
+      return { ...state, tasks: state.tasks.filter(task => task.id !== action.payload) };
 
     // Quote Actions
     case 'ADD_QUOTE':
-      return {
-        ...state,
-        quotes: [...state.quotes, action.payload]
-      };
-
+      return { ...state, quotes: [...state.quotes, action.payload] };
     case 'UPDATE_QUOTE':
       return {
         ...state,
-        quotes: state.quotes.map(quote => 
+        quotes: state.quotes.map(quote =>
           quote.id === action.payload.id ? { ...quote, ...action.payload } : quote
         )
       };
-
     case 'DELETE_QUOTE':
-      return {
-        ...state,
-        quotes: state.quotes.filter(quote => quote.id !== action.payload)
-      };
+      return { ...state, quotes: state.quotes.filter(quote => quote.id !== action.payload) };
 
     // Payment Actions
     case 'ADD_PAYMENT':
-      return {
-        ...state,
-        payments: [...state.payments, action.payload]
-      };
-
+      return { ...state, payments: [...state.payments, action.payload] };
     case 'UPDATE_PAYMENT':
       return {
         ...state,
-        payments: state.payments.map(payment => 
+        payments: state.payments.map(payment =>
           payment.id === action.payload.id ? { ...payment, ...action.payload } : payment
         )
       };
 
     // Invoice Actions
     case 'ADD_INVOICE':
-      return {
-        ...state,
-        invoices: [...state.invoices, action.payload]
-      };
-
+      return { ...state, invoices: [...state.invoices, action.payload] };
     case 'UPDATE_INVOICE':
       return {
         ...state,
-        invoices: state.invoices.map(invoice => 
+        invoices: state.invoices.map(invoice =>
           invoice.id === action.payload.id ? { ...invoice, ...action.payload } : invoice
         )
       };
 
     // Notification Actions
     case 'ADD_NOTIFICATION':
-      return {
-        ...state,
-        notifications: [...state.notifications, action.payload]
-      };
-
+      return { ...state, notifications: [...state.notifications, action.payload] };
     case 'REMOVE_NOTIFICATION':
-      return {
-        ...state,
-        notifications: state.notifications.filter(notif => notif.id !== action.payload)
-      };
-
+      return { ...state, notifications: state.notifications.filter(notif => notif.id !== action.payload) };
     case 'CLEAR_NOTIFICATIONS':
-      return {
-        ...state,
-        notifications: []
-      };
+      return { ...state, notifications: [] };
 
     // Appointment Actions
     case 'ADD_APPOINTMENT':
-      return {
-        ...state,
-        appointments: [...state.appointments, action.payload]
-      };
-
+      return { ...state, appointments: [...state.appointments, action.payload] };
     case 'UPDATE_APPOINTMENT':
       return {
         ...state,
-        appointments: state.appointments.map(apt => 
+        appointments: state.appointments.map(apt =>
           apt.id === action.payload.id ? { ...apt, ...action.payload } : apt
         )
       };
-
     case 'DELETE_APPOINTMENT':
-      return {
-        ...state,
-        appointments: state.appointments.filter(apt => apt.id !== action.payload)
-      };
+      return { ...state, appointments: state.appointments.filter(apt => apt.id !== action.payload) };
 
     // Document Actions
     case 'ADD_DOCUMENT':
-      return {
-        ...state,
-        documents: [...state.documents, action.payload]
-      };
-
+      return { ...state, documents: [...state.documents, action.payload] };
     case 'DELETE_DOCUMENT':
-      return {
-        ...state,
-        documents: state.documents.filter(doc => doc.id !== action.payload)
-      };
+      return { ...state, documents: state.documents.filter(doc => doc.id !== action.payload) };
 
     default:
       return state;
@@ -433,10 +308,7 @@ export const AppProvider = ({ children }) => {
         if (decodedToken.expires > Date.now()) {
           dispatch({
             type: 'CHECK_AUTH',
-            payload: {
-              isAuthenticated: true,
-              user: userData
-            }
+            payload: { isAuthenticated: true, user: userData }
           });
         } else {
           // Token expired, clear storage
@@ -445,10 +317,7 @@ export const AppProvider = ({ children }) => {
       } else {
         dispatch({
           type: 'CHECK_AUTH',
-          payload: {
-            isAuthenticated: false,
-            user: null
-          }
+          payload: { isAuthenticated: false, user: null }
         });
       }
     } catch (error) {
@@ -647,19 +516,29 @@ export const AppProvider = ({ children }) => {
 
     // Only dispatch if arrays are empty (to avoid duplicates)
     if (state.students.length === 0) {
-      sampleStudents.forEach(student => dispatch({ type: 'ADD_STUDENT', payload: student }));
+      sampleStudents.forEach(student => 
+        dispatch({ type: 'ADD_STUDENT', payload: student })
+      );
     }
     if (state.schools.length === 0) {
-      sampleSchools.forEach(school => dispatch({ type: 'ADD_SCHOOL', payload: school }));
+      sampleSchools.forEach(school => 
+        dispatch({ type: 'ADD_SCHOOL', payload: school })
+      );
     }
     if (state.courses.length === 0) {
-      sampleCourses.forEach(course => dispatch({ type: 'ADD_COURSE', payload: course }));
+      sampleCourses.forEach(course => 
+        dispatch({ type: 'ADD_COURSE', payload: course })
+      );
     }
     if (state.leads.length === 0) {
-      sampleLeads.forEach(lead => dispatch({ type: 'ADD_LEAD', payload: lead }));
+      sampleLeads.forEach(lead => 
+        dispatch({ type: 'ADD_LEAD', payload: lead })
+      );
     }
     if (state.tasks.length === 0) {
-      sampleTasks.forEach(task => dispatch({ type: 'ADD_TASK', payload: task }));
+      sampleTasks.forEach(task => 
+        dispatch({ type: 'ADD_TASK', payload: task })
+      );
     }
   };
 

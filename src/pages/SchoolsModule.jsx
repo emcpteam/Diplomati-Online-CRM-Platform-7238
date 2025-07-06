@@ -29,7 +29,7 @@ const SchoolsModule = () => {
   );
 
   const getAssignedStudentsCount = (schoolId) => {
-    return state.students.filter(student => 
+    return state.students.filter(student =>
       student.assignedSchool === schoolId
     ).length;
   };
@@ -76,13 +76,11 @@ const SchoolsModule = () => {
     link.download = `scuole-export-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-
     toast.success('Export completato con successo!');
   };
 
   const handleSendEmail = async (school) => {
     const toastId = toast.loading('Invio email in corso...');
-    
     try {
       const subject = 'Comunicazione da Diplomati Online';
       const content = `
@@ -107,7 +105,6 @@ Il team di Diplomati Online
       ...selectedSchool,
       documents: [...(selectedSchool.documents || []), document]
     };
-    
     dispatch({ type: 'UPDATE_SCHOOL', payload: updatedSchool });
     toast.success('Documento caricato con successo!');
   };
@@ -118,7 +115,6 @@ Il team di Diplomati Online
       ...selectedSchool,
       examTemplates: [...(selectedSchool.examTemplates || []), template]
     };
-    
     dispatch({ type: 'UPDATE_SCHOOL', payload: updatedSchool });
     toast.success('Template salvato con successo!');
   };
@@ -176,8 +172,8 @@ Il team di Diplomati Online
               <h3 className="text-lg font-semibold text-neutral-800">
                 Documenti ({school.documents?.length || 0})
               </h3>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 icon={FiIcons.FiUpload}
                 onClick={() => {
                   onClose();
@@ -187,7 +183,6 @@ Il team di Diplomati Online
                 Carica Documento
               </Button>
             </div>
-            
             {school.documents && school.documents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {school.documents.map((doc) => (
@@ -214,8 +209,8 @@ Il team di Diplomati Online
               <h3 className="text-lg font-semibold text-neutral-800">
                 Template Esami ({school.examTemplates?.length || 0})
               </h3>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 icon={FiIcons.FiFileText}
                 onClick={() => {
                   onClose();
@@ -225,7 +220,6 @@ Il team di Diplomati Online
                 Crea Template
               </Button>
             </div>
-            
             {school.examTemplates && school.examTemplates.length > 0 ? (
               <div className="space-y-3">
                 {school.examTemplates.map((template) => (
@@ -277,7 +271,6 @@ Il team di Diplomati Online
                   </div>
                 ) : null;
               })}
-
               {school.assignedStudents.length === 0 && (
                 <p className="text-neutral-500 text-center py-8">Nessuno studente assegnato</p>
               )}
@@ -378,17 +371,10 @@ Il team di Diplomati Online
                   <SafeIcon icon={FiIcons.FiMapPin} className="w-4 h-4 text-neutral-400 mt-1" />
                   <p className="text-sm text-neutral-600">{school.address}</p>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <SafeIcon icon={FiIcons.FiPhone} className="w-4 h-4 text-neutral-400" />
-                  <p className="text-sm text-neutral-600">{school.phone}</p>
-                </div>
-
                 <div className="flex items-center space-x-2">
                   <SafeIcon icon={FiIcons.FiMail} className="w-4 h-4 text-neutral-400" />
                   <p className="text-sm text-neutral-600">{school.email}</p>
                 </div>
-
                 {school.notes && (
                   <div className="flex items-start space-x-2">
                     <SafeIcon icon={FiIcons.FiFileText} className="w-4 h-4 text-neutral-400 mt-1" />
@@ -403,21 +389,11 @@ Il team di Diplomati Online
                   <Button
                     variant="ghost"
                     size="sm"
-                    icon={FiIcons.FiPhone}
-                    onClick={() => window.open(`tel:${school.phone}`)}
-                  >
-                    Chiama
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
                     icon={FiIcons.FiMail}
                     onClick={() => handleSendEmail(school)}
                   >
                     Email
                   </Button>
-
                   <Button
                     variant="ghost"
                     size="sm"
@@ -426,7 +402,6 @@ Il team di Diplomati Online
                   >
                     Documenti
                   </Button>
-
                   <Button
                     variant="ghost"
                     size="sm"
@@ -435,9 +410,6 @@ Il team di Diplomati Online
                   >
                     Template
                   </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -446,7 +418,8 @@ Il team di Diplomati Online
                   >
                     Modifica
                   </Button>
-
+                </div>
+                <div className="flex justify-center">
                   <Button
                     size="sm"
                     icon={FiIcons.FiEye}
@@ -491,7 +464,6 @@ Il team di Diplomati Online
             mode={modalMode}
           />
         )}
-
         {showUploadModal && selectedSchool && (
           <UploadDocumentSchoolModal
             school={selectedSchool}
@@ -499,7 +471,6 @@ Il team di Diplomati Online
             onUpload={handleDocumentUploaded}
           />
         )}
-
         {showTemplateModal && selectedSchool && (
           <ExamTemplateModal
             school={selectedSchool}
@@ -507,7 +478,6 @@ Il team di Diplomati Online
             onTemplateSaved={handleTemplateSaved}
           />
         )}
-
         {showDetailsModal && selectedSchool && (
           <SchoolDetailsModal
             school={selectedSchool}

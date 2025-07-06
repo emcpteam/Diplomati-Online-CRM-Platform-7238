@@ -35,7 +35,6 @@ const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
     }
 
     setLoading(true);
-
     try {
       const payment = {
         id: Date.now(),
