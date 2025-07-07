@@ -50,10 +50,10 @@ const StudentsManagement = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active': return <Badge variant="success">Active</Badge>;
-      case 'suspended': return <Badge variant="warning">Suspended</Badge>;
-      case 'completed': return <Badge variant="primary">Completed</Badge>;
-      default: return <Badge variant="default">Unknown</Badge>;
+      case 'active': return <Badge variant="success">Attivo</Badge>;
+      case 'suspended': return <Badge variant="warning">Sospeso</Badge>;
+      case 'completed': return <Badge variant="primary">Completato</Badge>;
+      default: return <Badge variant="default">Sconosciuto</Badge>;
     }
   };
 
@@ -72,24 +72,24 @@ const StudentsManagement = () => {
 
   const handleExport = () => {
     const data = filteredStudents.map(student => ({
-      Name: student.firstName,
-      Surname: student.lastName,
+      Nome: student.firstName,
+      Cognome: student.lastName,
       Email: student.email,
-      Phone: student.phone,
-      Course: student.course,
-      Status: student.status,
-      'Total Amount': student.totalAmount,
-      'Paid Amount': student.paidAmount,
-      'Enrollment Date': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
-      'Exam School': getAssignedSchool(student)?.name || 'Not assigned'
+      Telefono: student.phone,
+      Corso: student.course,
+      Stato: student.status,
+      'Importo Totale': student.totalAmount,
+      'Importo Pagato': student.paidAmount,
+      'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
+      'Scuola Esami': getAssignedSchool(student)?.name || 'Non assegnata'
     }));
 
-    exportToCSV(data, `students-export-${new Date().toISOString().split('T')[0]}.csv`);
-    toast.success('Export completed successfully!');
+    exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
+    toast.success('Export completato con successo!');
   };
 
   const handleSendEmail = async (student, template) => {
-    const toastId = toast.loading('Sending email...');
+    const toastId = toast.loading('Invio email in corso...');
     try {
       const emailData = emailTemplates[template](student);
       await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
@@ -109,9 +109,9 @@ const StudentsManagement = () => {
       };
 
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-      toast.success('Email sent successfully!', { id: toastId });
+      toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
-      toast.error('Error sending email', { id: toastId });
+      toast.error('Errore durante l\'invio dell\'email', { id: toastId });
     }
   };
 
@@ -123,7 +123,7 @@ const StudentsManagement = () => {
   const handleSchoolAssigned = (updatedStudent) => {
     const assignedSchool = getAssignedSchool(updatedStudent);
     toast.success(
-      `Student assigned to ${assignedSchool?.name || 'no school'} for exams!`
+      `Studente assegnato a ${assignedSchool?.name || 'nessuna scuola'} per gli esami!`
     );
   };
 
@@ -133,19 +133,15 @@ const StudentsManagement = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-neutral-800">
-            Student Management
+            Gestione Studenti
           </h1>
           <p className="text-neutral-600 mt-2">
-            Manage all students enrolled in courses
+            Gestisci tutti gli studenti iscritti ai corsi
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button
-            variant="outline"
-            icon={FiIcons.FiDownload}
-            onClick={handleExport}
-          >
-            Export CSV
+          <Button variant="outline" icon={FiIcons.FiDownload} onClick={handleExport}>
+            Esporta CSV
           </Button>
           <Button
             icon={FiIcons.FiPlus}
@@ -155,7 +151,7 @@ const StudentsManagement = () => {
               setShowModal(true);
             }}
           >
-            New Student
+            Nuovo Studente
           </Button>
         </div>
       </div>
@@ -164,7 +160,7 @@ const StudentsManagement = () => {
       <Card className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Input
-            placeholder="Search students..."
+            placeholder="Cerca studenti..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={FiIcons.FiSearch}
@@ -174,17 +170,17 @@ const StudentsManagement = () => {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="completed">Completed</option>
+            <option value="all">Tutti gli stati</option>
+            <option value="active">Attivi</option>
+            <option value="suspended">Sospesi</option>
+            <option value="completed">Completati</option>
           </select>
           <select
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
             className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="all">All courses</option>
+            <option value="all">Tutti i corsi</option>
             {state.courses.map(course => (
               <option key={course.id} value={course.name}>{course.name}</option>
             ))}
@@ -194,10 +190,10 @@ const StudentsManagement = () => {
             onChange={(e) => setSortBy(e.target.value)}
             className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="name">Sort by name</option>
-            <option value="enrollment">Enrollment date</option>
-            <option value="course">Course</option>
-            <option value="payment">Payment status</option>
+            <option value="name">Ordina per nome</option>
+            <option value="enrollment">Data iscrizione</option>
+            <option value="course">Corso</option>
+            <option value="payment">Stato pagamento</option>
           </select>
         </div>
       </Card>
@@ -235,20 +231,20 @@ const StudentsManagement = () => {
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500">Course:</span>
+                    <span className="text-neutral-500">Corso:</span>
                     <span className="font-medium text-neutral-800">{student.course}</span>
                   </div>
 
                   {/* School Assignment */}
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500">Exam School:</span>
+                    <span className="text-neutral-500">Scuola Esami:</span>
                     <div className="flex items-center space-x-2">
                       {assignedSchool ? (
                         <span className="font-medium text-neutral-800 text-xs">
                           {assignedSchool.name}
                         </span>
                       ) : (
-                        <span className="text-orange-600 text-xs">Not assigned</span>
+                        <span className="text-orange-600 text-xs">Non assegnata</span>
                       )}
                       <Button
                         variant="ghost"
@@ -262,7 +258,7 @@ const StudentsManagement = () => {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-neutral-500">Payments:</span>
+                      <span className="text-neutral-500">Pagamenti:</span>
                       <span className="font-medium text-neutral-800">
                         €{student.paidAmount} / €{student.totalAmount}
                       </span>
@@ -279,7 +275,7 @@ const StudentsManagement = () => {
                     <div className="flex items-center space-x-2">
                       <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
                       <span className="text-xs text-accent-600 font-medium">
-                        Converted from Lead
+                        Convertito da Lead
                       </span>
                     </div>
                   )}
@@ -291,12 +287,21 @@ const StudentsManagement = () => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      icon={FiIcons.FiPhone}
+                      onClick={() => window.open(`tel:${student.phone}`)}
+                    >
+                      Chiama
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       icon={FiIcons.FiMail}
                       onClick={() => handleSendEmail(student, 'welcome')}
                     >
                       Email
                     </Button>
                   </div>
+
                   <div className="flex items-center justify-between">
                     <Button
                       variant="outline"
@@ -308,11 +313,11 @@ const StudentsManagement = () => {
                         setShowModal(true);
                       }}
                     >
-                      Edit
+                      Modifica
                     </Button>
                     <Link to={`/students/${student.id}`}>
                       <Button size="sm" icon={FiIcons.FiEye}>
-                        Details
+                        Dettagli
                       </Button>
                     </Link>
                   </div>
@@ -330,10 +335,10 @@ const StudentsManagement = () => {
             <SafeIcon icon={FiIcons.FiUsers} className="w-8 h-8 text-neutral-400" />
           </div>
           <h3 className="text-lg font-medium text-neutral-800 mb-2">
-            No students found
+            Nessuno studente trovato
           </h3>
           <p className="text-neutral-500 mb-6">
-            No students match the selected filters.
+            Non ci sono studenti che corrispondono ai filtri selezionati.
           </p>
           <Button
             icon={FiIcons.FiPlus}
@@ -343,7 +348,7 @@ const StudentsManagement = () => {
               setShowModal(true);
             }}
           >
-            Add First Student
+            Aggiungi Primo Studente
           </Button>
         </Card>
       )}
@@ -377,31 +382,31 @@ const StudentsManagement = () => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 text-center">
           <div>
             <p className="text-2xl font-bold text-neutral-800">{state.students.length}</p>
-            <p className="text-sm text-neutral-500">Total Students</p>
+            <p className="text-sm text-neutral-500">Totale Studenti</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-accent-600">
               {state.students.filter(s => s.status === 'active').length}
             </p>
-            <p className="text-sm text-neutral-500">Active</p>
+            <p className="text-sm text-neutral-500">Attivi</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-primary-600">
               €{state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
             </p>
-            <p className="text-sm text-neutral-500">Total Revenue</p>
+            <p className="text-sm text-neutral-500">Incassi Totali</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-warning-600">
               €{state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
             </p>
-            <p className="text-sm text-neutral-500">Outstanding</p>
+            <p className="text-sm text-neutral-500">Da Incassare</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-secondary-600">
               {state.students.filter(s => s.assignedSchool).length}
             </p>
-            <p className="text-sm text-neutral-500">With Exam School</p>
+            <p className="text-sm text-neutral-500">Con Scuola Esami</p>
           </div>
         </div>
       </Card>

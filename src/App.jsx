@@ -2,19 +2,13 @@ import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { QuestProvider } from '@questlabs/react-sdk';
-import '@questlabs/react-sdk/dist/style.css';
 
-// Context imports
-import { AppProvider } from './context/AppContext';
-import { AuthProvider } from './context/AuthContext';
-
-// Layout components
+// Layout Components
 import { Sidebar, Header, Footer } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import QuestProtectedRoute from './components/QuestProtectedRoute';
 
-// Page imports
+// Pages
 import {
   Dashboard,
   StudentsManagement,
@@ -26,134 +20,190 @@ import {
   APIIntegrations,
   UserRoles,
   InternalTools,
-  TemplateCreator,
   Analytics,
+  TemplateCreator,
   Login,
-  ElectronicInvoicing,
-  QuestLogin,
-  QuestOnboarding
+  ElectronicInvoicing
 } from './pages';
 
-import questConfig from './config/questConfig';
+// Quest Pages
+import QuestLogin from './pages/QuestLogin';
+import QuestOnboarding from './pages/QuestOnboarding';
+
+// Context
+import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 const AppContent = () => {
+  const { state } = useApp();
+  const { isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
-    <QuestProvider 
-      apiKey={questConfig.APIKEY} 
-      entityId={questConfig.ENTITYID}
-      apiType="PRODUCTION"
-    >
-      <div className="min-h-screen bg-gradient-to-br from-pastel-cream via-pastel-sky/20 to-pastel-mint/30">
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-          
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Header setSidebarOpen={setSidebarOpen} />
-            
-            <main className="flex-1 overflow-y-auto p-6">
-              <Routes>
-                {/* Quest Authentication Routes */}
-                <Route path="/quest-login" element={<QuestLogin />} />
-                <Route path="/onboarding" element={
-                  <QuestProtectedRoute>
-                    <QuestOnboarding />
-                  </QuestProtectedRoute>
-                } />
+  // If not authenticated with Quest, show Quest auth flow
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/quest-login" element={<QuestLogin />} />
+        <Route path="/onboarding" element={<QuestOnboarding />} />
+        <Route path="*" element={<Navigate to="/quest-login" replace />} />
+      </Routes>
+    );
+  }
 
-                {/* Protected Routes */}
+  // If authenticated with Quest but not with legacy system, redirect to legacy login
+  if (!state.isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/quest-login" element={<Navigate to="/login" replace />} />
+        <Route path="/onboarding" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pastel-cream via-pastel-sky/20 to-pastel-mint/30">
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar */}
+        <div className="hidden lg:block w-80 flex-shrink-0">
+          <Sidebar sidebarOpen={true} setSidebarOpen={setSidebarOpen} />
+        </div>
+
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden">
+          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header setSidebarOpen={setSidebarOpen} />
+          
+          <main className="flex-1 overflow-y-auto bg-transparent">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="container mx-auto px-6 py-8"
+            >
+              <Routes>
+                <Route path="/quest-login" element={<Navigate to="/" replace />} />
+                <Route path="/onboarding" element={<Navigate to="/" replace />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                
                 <Route path="/" element={
                   <QuestProtectedRoute>
-                    <Dashboard />
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/students" element={
                   <QuestProtectedRoute>
-                    <StudentsManagement />
+                    <ProtectedRoute>
+                      <StudentsManagement />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/students/:id" element={
                   <QuestProtectedRoute>
-                    <StudentProfile />
+                    <ProtectedRoute>
+                      <StudentProfile />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/schools" element={
                   <QuestProtectedRoute>
-                    <SchoolsModule />
+                    <ProtectedRoute>
+                      <SchoolsModule />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/courses" element={
                   <QuestProtectedRoute>
-                    <CoursesSubjects />
+                    <ProtectedRoute>
+                      <CoursesSubjects />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/leads" element={
                   <QuestProtectedRoute>
-                    <LeadManagement />
-                  </QuestProtectedRoute>
-                } />
-                
-                <Route path="/templates" element={
-                  <QuestProtectedRoute>
-                    <TemplateCreator />
-                  </QuestProtectedRoute>
-                } />
-                
-                <Route path="/invoicing" element={
-                  <QuestProtectedRoute>
-                    <ElectronicInvoicing />
+                    <ProtectedRoute>
+                      <LeadManagement />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/company" element={
                   <QuestProtectedRoute>
-                    <CompanyConfig />
+                    <ProtectedRoute>
+                      <CompanyConfig />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/integrations" element={
                   <QuestProtectedRoute>
-                    <APIIntegrations />
+                    <ProtectedRoute>
+                      <APIIntegrations />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/users" element={
                   <QuestProtectedRoute>
-                    <UserRoles />
+                    <ProtectedRoute>
+                      <UserRoles />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/tools" element={
                   <QuestProtectedRoute>
-                    <InternalTools />
+                    <ProtectedRoute>
+                      <InternalTools />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
                 
                 <Route path="/analytics" element={
                   <QuestProtectedRoute>
-                    <Analytics />
+                    <ProtectedRoute>
+                      <Analytics />
+                    </ProtectedRoute>
                   </QuestProtectedRoute>
                 } />
-
-                {/* Traditional Login Route */}
-                <Route path="/login" element={<Login />} />
-
-                {/* Redirect unknown routes */}
+                
+                <Route path="/templates" element={
+                  <QuestProtectedRoute>
+                    <ProtectedRoute>
+                      <TemplateCreator />
+                    </ProtectedRoute>
+                  </QuestProtectedRoute>
+                } />
+                
+                <Route path="/invoicing" element={
+                  <QuestProtectedRoute>
+                    <ProtectedRoute>
+                      <ElectronicInvoicing />
+                    </ProtectedRoute>
+                  </QuestProtectedRoute>
+                } />
+                
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </main>
-            
-            <Footer />
-          </div>
+            </motion.div>
+          </main>
+          
+          <Footer />
         </div>
       </div>
-    </QuestProvider>
+    </div>
   );
 };
 
@@ -162,10 +212,13 @@ function App() {
     <AuthProvider>
       <AppProvider>
         <Router>
-          <Toaster position="top-right" toastOptions={{
-            className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
-            duration: 4000,
-          }} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
+              duration: 4000,
+            }}
+          />
           <AppContent />
         </Router>
       </AppProvider>
