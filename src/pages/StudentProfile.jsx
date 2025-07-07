@@ -35,14 +35,14 @@ const StudentProfile = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-neutral-800 mb-2">
-            Studente non trovato
+            Student not found
           </h2>
           <p className="text-neutral-500 mb-4">
-            Lo studente richiesto non esiste nel sistema.
+            The requested student does not exist in the system.
           </p>
           <Link to="/students">
             <Button icon={FiIcons.FiArrowLeft}>
-              Torna alla Lista
+              Back to List
             </Button>
           </Link>
         </div>
@@ -51,12 +51,12 @@ const StudentProfile = () => {
   }
 
   const tabs = [
-    { id: 'profile', label: 'Profilo', icon: FiIcons.FiUser },
-    { id: 'subscription', label: 'Iscrizione', icon: FiIcons.FiBookOpen },
-    { id: 'payments', label: 'Pagamenti', icon: FiIcons.FiCreditCard },
-    { id: 'exams', label: 'Esami', icon: FiIcons.FiFileText },
-    { id: 'communication', label: 'Comunicazioni', icon: FiIcons.FiMail },
-    { id: 'calendar', label: 'Calendario', icon: FiIcons.FiCalendar },
+    { id: 'profile', label: 'Profile', icon: FiIcons.FiUser },
+    { id: 'subscription', label: 'Enrollment', icon: FiIcons.FiBookOpen },
+    { id: 'payments', label: 'Payments', icon: FiIcons.FiCreditCard },
+    { id: 'exams', label: 'Exams', icon: FiIcons.FiFileText },
+    { id: 'communication', label: 'Communications', icon: FiIcons.FiMail },
+    { id: 'calendar', label: 'Calendar', icon: FiIcons.FiCalendar },
   ];
 
   const getAssignedSchool = () => {
@@ -75,11 +75,10 @@ const StudentProfile = () => {
     const remainingAmount = student.totalAmount - student.paidAmount;
     const monthlyPayment = remainingAmount / 12; // Example: 12 months
     const installments = [];
-    
+
     for (let i = 0; i < 12; i++) {
       const dueDate = new Date();
       dueDate.setMonth(dueDate.getMonth() + i + 1);
-      
       installments.push({
         id: i + 1,
         amount: monthlyPayment,
@@ -88,7 +87,7 @@ const StudentProfile = () => {
         paid: false
       });
     }
-    
+
     return installments;
   };
 
@@ -98,25 +97,25 @@ const StudentProfile = () => {
       documents: [...(student.documents || []), document]
     };
     dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-    toast.success('Documento caricato con successo!');
+    toast.success('Document uploaded successfully!');
   };
 
   const handleExamRequest = (examData, updatedStudent) => {
     dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-    toast.success('Richiesta esame inviata con successo!');
+    toast.success('Exam request sent successfully!');
   };
 
   const handlePaymentAdded = (payment, updatedStudent) => {
     dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-    toast.success('Pagamento registrato con successo!');
+    toast.success('Payment registered successfully!');
   };
 
   const handleSendEmail = async (template) => {
-    const toastId = toast.loading('Invio email in corso...');
+    const toastId = toast.loading('Sending email...');
     try {
       const emailData = emailTemplates[template](student);
       await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
-      
+
       const updatedStudent = {
         ...student,
         communications: [
@@ -131,11 +130,11 @@ const StudentProfile = () => {
           }
         ]
       };
-      
+
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-      toast.success('Email inviata con successo!', { id: toastId });
+      toast.success('Email sent successfully!', { id: toastId });
     } catch (error) {
-      toast.error('Errore durante l\'invio dell\'email', { id: toastId });
+      toast.error('Error sending email', { id: toastId });
     }
   };
 
@@ -145,7 +144,7 @@ const StudentProfile = () => {
       appointments: [...(student.appointments || []), appointmentData]
     };
     dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
-    toast.success('Appuntamento salvato con successo!');
+    toast.success('Appointment saved successfully!');
   };
 
   const renderTabContent = () => {
@@ -156,7 +155,7 @@ const StudentProfile = () => {
             {/* Profile Header */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">Dati Anagrafici</h3>
+                <h3 className="text-lg font-semibold text-neutral-800">Personal Data</h3>
                 <Button
                   variant="outline"
                   icon={editingProfile ? FiIcons.FiSave : FiIcons.FiEdit}
@@ -164,26 +163,26 @@ const StudentProfile = () => {
                     if (editingProfile) {
                       // Save changes
                       dispatch({ type: 'UPDATE_STUDENT', payload: { ...student, ...profileData } });
-                      toast.success('Profilo aggiornato!');
+                      toast.success('Profile updated!');
                     } else {
                       setProfileData(student);
                     }
                     setEditingProfile(!editingProfile);
                   }}
                 >
-                  {editingProfile ? 'Salva' : 'Modifica'}
+                  {editingProfile ? 'Save' : 'Edit'}
                 </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Nome"
+                  label="First Name"
                   value={editingProfile ? profileData.firstName : student.firstName}
                   onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                   readOnly={!editingProfile}
                 />
                 <Input
-                  label="Cognome"
+                  label="Last Name"
                   value={editingProfile ? profileData.lastName : student.lastName}
                   onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                   readOnly={!editingProfile}
@@ -195,19 +194,19 @@ const StudentProfile = () => {
                   readOnly={!editingProfile}
                 />
                 <Input
-                  label="Telefono"
+                  label="Phone"
                   value={editingProfile ? profileData.phone : student.phone}
                   onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   readOnly={!editingProfile}
                 />
                 <Input
-                  label="Codice Fiscale"
+                  label="Tax Code"
                   value={editingProfile ? profileData.codiceFiscale : student.codiceFiscale || ''}
                   onChange={(e) => setProfileData({ ...profileData, codiceFiscale: e.target.value })}
                   readOnly={!editingProfile}
                 />
                 <Input
-                  label="Data di Nascita"
+                  label="Birth Date"
                   type="date"
                   value={editingProfile ? profileData.birthDate : student.birthDate || ''}
                   onChange={(e) => setProfileData({ ...profileData, birthDate: e.target.value })}
@@ -217,7 +216,7 @@ const StudentProfile = () => {
 
               <div className="mt-4">
                 <Input
-                  label="Indirizzo Completo"
+                  label="Full Address"
                   value={editingProfile ? profileData.address : student.address || ''}
                   onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                   readOnly={!editingProfile}
@@ -229,13 +228,13 @@ const StudentProfile = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-neutral-800">
-                  Documenti ({student.documents?.length || 0})
+                  Documents ({student.documents?.length || 0})
                 </h3>
                 <Button
                   icon={FiIcons.FiUpload}
                   onClick={() => setShowDocumentUpload(true)}
                 >
-                  Carica Documento
+                  Upload Document
                 </Button>
               </div>
 
@@ -254,10 +253,10 @@ const StudentProfile = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="sm" icon={FiIcons.FiEye}>
-                          Visualizza
+                          View
                         </Button>
                         <Button variant="ghost" size="sm" icon={FiIcons.FiDownload}>
-                          Scarica
+                          Download
                         </Button>
                       </div>
                     </div>
@@ -266,7 +265,7 @@ const StudentProfile = () => {
               ) : (
                 <div className="text-center py-8">
                   <SafeIcon icon={FiIcons.FiFileText} className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                  <p className="text-neutral-500">Nessun documento caricato</p>
+                  <p className="text-neutral-500">No documents uploaded</p>
                 </div>
               )}
             </Card>
@@ -278,46 +277,44 @@ const StudentProfile = () => {
         return (
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-6">Dettagli Iscrizione</h3>
-              
+              <h3 className="text-lg font-semibold text-neutral-800 mb-6">Enrollment Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-neutral-500">Corso</label>
+                    <label className="text-sm text-neutral-500">Course</label>
                     <p className="font-medium text-neutral-800">{student.course}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-neutral-500">Anni da Recuperare</label>
+                    <label className="text-sm text-neutral-500">Years to Recover</label>
                     <p className="font-medium text-neutral-800">{student.yearsToRecover}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-neutral-500">Data Iscrizione</label>
+                    <label className="text-sm text-neutral-500">Enrollment Date</label>
                     <p className="font-medium text-neutral-800">
                       {new Date(student.enrollmentDate).toLocaleDateString('it-IT')}
                     </p>
                   </div>
                 </div>
-                
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-neutral-500">Stato</label>
+                    <label className="text-sm text-neutral-500">Status</label>
                     <div className="mt-1">
                       <Badge variant={student.status === 'active' ? 'success' : 'warning'}>
-                        {student.status === 'active' ? 'Attivo' : 'Sospeso'}
+                        {student.status === 'active' ? 'Active' : 'Suspended'}
                       </Badge>
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm text-neutral-500">Scuola per Esami</label>
+                    <label className="text-sm text-neutral-500">Exam School</label>
                     <p className="font-medium text-neutral-800">
-                      {assignedSchool ? assignedSchool.name : 'Non assegnata'}
+                      {assignedSchool ? assignedSchool.name : 'Not assigned'}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-neutral-500">Tipo Pagamento</label>
+                    <label className="text-sm text-neutral-500">Payment Type</label>
                     <p className="font-medium text-neutral-800">
-                      {student.paymentType === 'wire_transfer' ? 'Bonifico' : 
-                       student.paymentType === 'installment' ? 'Rateale' : 'Finanziamento'}
+                      {student.paymentType === 'wire_transfer' ? 'Wire Transfer' : 
+                       student.paymentType === 'installment' ? 'Installment' : 'Financing'}
                     </p>
                   </div>
                 </div>
@@ -326,7 +323,7 @@ const StudentProfile = () => {
 
             {/* Course Subjects */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Materie del Corso</h3>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Course Subjects</h3>
               {(() => {
                 const course = state.courses.find(c => c.name === student.course);
                 return course && course.subjects ? (
@@ -338,7 +335,7 @@ const StudentProfile = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-neutral-500">Materie non configurate per questo corso</p>
+                  <p className="text-neutral-500">Subjects not configured for this course</p>
                 );
               })()}
             </Card>
@@ -348,39 +345,38 @@ const StudentProfile = () => {
       case 'payments':
         const paymentProgress = getPaymentProgress();
         const installments = calculateInstallments();
-        
         return (
           <div className="space-y-6">
             {/* Payment Overview */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">Panoramica Pagamenti</h3>
+                <h3 className="text-lg font-semibold text-neutral-800">Payment Overview</h3>
                 <Button
                   icon={FiIcons.FiPlus}
                   onClick={() => setShowPaymentModal(true)}
                 >
-                  Registra Pagamento
+                  Register Payment
                 </Button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center p-4 bg-neutral-50 rounded-xl">
                   <p className="text-2xl font-bold text-neutral-800">€{student.totalAmount}</p>
-                  <p className="text-sm text-neutral-500">Totale</p>
+                  <p className="text-sm text-neutral-500">Total</p>
                 </div>
                 <div className="text-center p-4 bg-accent-50 rounded-xl">
                   <p className="text-2xl font-bold text-accent-600">€{student.paidAmount}</p>
-                  <p className="text-sm text-neutral-500">Pagato</p>
+                  <p className="text-sm text-neutral-500">Paid</p>
                 </div>
                 <div className="text-center p-4 bg-orange-50 rounded-xl">
                   <p className="text-2xl font-bold text-orange-600">€{paymentProgress.remaining}</p>
-                  <p className="text-sm text-neutral-500">Rimanente</p>
+                  <p className="text-sm text-neutral-500">Remaining</p>
                 </div>
               </div>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-neutral-500">Progresso Pagamenti</span>
+                  <span className="text-sm text-neutral-500">Payment Progress</span>
                   <span className="text-sm font-medium text-neutral-800">
                     {paymentProgress.percentage.toFixed(1)}%
                   </span>
@@ -397,7 +393,7 @@ const StudentProfile = () => {
             {/* Dynamic Installment Tracker */}
             {student.paymentType === 'installment' && (
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-neutral-800 mb-4">Piano Rate</h3>
+                <h3 className="text-lg font-semibold text-neutral-800 mb-4">Installment Plan</h3>
                 <div className="space-y-3">
                   {installments.map((installment) => (
                     <div key={installment.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
@@ -410,19 +406,18 @@ const StudentProfile = () => {
                         </div>
                         <div>
                           <p className="font-medium text-neutral-800">
-                            Rata {installment.id} - €{installment.amount.toFixed(2)}
+                            Installment {installment.id} - €{installment.amount.toFixed(2)}
                           </p>
                           <p className="text-sm text-neutral-500">
-                            Scadenza: {new Date(installment.dueDate).toLocaleDateString('it-IT')}
+                            Due: {new Date(installment.dueDate).toLocaleDateString('it-IT')}
                           </p>
                         </div>
                       </div>
                       <Badge variant={
-                        installment.paid ? 'success' :
+                        installment.paid ? 'success' : 
                         installment.status === 'upcoming' ? 'warning' : 'default'
                       }>
-                        {installment.paid ? 'Pagata' : 
-                         installment.status === 'upcoming' ? 'Prossima' : 'In attesa'}
+                        {installment.paid ? 'Paid' : installment.status === 'upcoming' ? 'Next' : 'Pending'}
                       </Badge>
                     </div>
                   ))}
@@ -432,7 +427,7 @@ const StudentProfile = () => {
 
             {/* Payment History */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Storico Pagamenti</h3>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Payment History</h3>
               {student.payments && student.payments.length > 0 ? (
                 <div className="space-y-3">
                   {student.payments.map((payment) => (
@@ -443,12 +438,12 @@ const StudentProfile = () => {
                           {new Date(payment.date).toLocaleDateString('it-IT')} - {payment.method}
                         </p>
                       </div>
-                      <Badge variant="success">Completato</Badge>
+                      <Badge variant="success">Completed</Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-neutral-500 text-center py-8">Nessun pagamento registrato</p>
+                <p className="text-neutral-500 text-center py-8">No payments registered</p>
               )}
             </Card>
           </div>
@@ -459,13 +454,13 @@ const StudentProfile = () => {
           <div className="space-y-6">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">Gestione Esami</h3>
+                <h3 className="text-lg font-semibold text-neutral-800">Exam Management</h3>
                 <Button
                   icon={FiIcons.FiPlus}
                   onClick={() => setShowExamRequest(true)}
                   disabled={!student.assignedSchool}
                 >
-                  Richiesta Esame
+                  Exam Request
                 </Button>
               </div>
 
@@ -474,9 +469,9 @@ const StudentProfile = () => {
                   <div className="flex items-center space-x-3">
                     <SafeIcon icon={FiIcons.FiAlertTriangle} className="w-5 h-5 text-orange-500" />
                     <div>
-                      <p className="text-sm font-medium text-orange-800">Scuola non assegnata</p>
+                      <p className="text-sm font-medium text-orange-800">School not assigned</p>
                       <p className="text-sm text-orange-700">
-                        Assegna una scuola prima di creare richieste d'esame.
+                        Assign a school before creating exam requests.
                       </p>
                     </div>
                   </div>
@@ -489,7 +484,7 @@ const StudentProfile = () => {
                     <div key={exam.id} className="p-4 border border-neutral-200 rounded-xl">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-medium text-neutral-800">
-                          Esame - {exam.examType}
+                          Exam - {exam.examType}
                         </h4>
                         <Badge variant={
                           exam.status === 'completed' ? 'success' :
@@ -500,17 +495,17 @@ const StudentProfile = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-neutral-500">Data Esame:</p>
+                          <p className="text-neutral-500">Exam Date:</p>
                           <p className="font-medium">{new Date(exam.examDate).toLocaleDateString('it-IT')}</p>
                         </div>
                         <div>
-                          <p className="text-neutral-500">Materie:</p>
+                          <p className="text-neutral-500">Subjects:</p>
                           <p className="font-medium">{exam.subjects.join(', ')}</p>
                         </div>
                       </div>
                       {exam.notes && (
                         <div className="mt-3">
-                          <p className="text-neutral-500 text-sm">Note:</p>
+                          <p className="text-neutral-500 text-sm">Notes:</p>
                           <p className="text-neutral-700 text-sm">{exam.notes}</p>
                         </div>
                       )}
@@ -520,7 +515,7 @@ const StudentProfile = () => {
               ) : (
                 <div className="text-center py-8">
                   <SafeIcon icon={FiIcons.FiFileText} className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                  <p className="text-neutral-500">Nessun esame programmato</p>
+                  <p className="text-neutral-500">No exams scheduled</p>
                 </div>
               )}
             </Card>
@@ -532,7 +527,7 @@ const StudentProfile = () => {
           <div className="space-y-6">
             {/* Email Templates */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-6">Template Email</h3>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-6">Email Templates</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
                   variant="outline"
@@ -540,7 +535,7 @@ const StudentProfile = () => {
                   onClick={() => handleSendEmail('welcome')}
                   className="justify-start"
                 >
-                  Email di Benvenuto
+                  Welcome Email
                 </Button>
                 <Button
                   variant="outline"
@@ -548,7 +543,7 @@ const StudentProfile = () => {
                   onClick={() => handleSendEmail('paymentReminder')}
                   className="justify-start"
                 >
-                  Promemoria Pagamento
+                  Payment Reminder
                 </Button>
                 <Button
                   variant="outline"
@@ -556,7 +551,7 @@ const StudentProfile = () => {
                   onClick={() => handleSendEmail('examPreparation')}
                   className="justify-start"
                 >
-                  Preparazione Esame
+                  Exam Preparation
                 </Button>
                 <Button
                   variant="outline"
@@ -564,22 +559,22 @@ const StudentProfile = () => {
                   onClick={() => handleSendEmail('congratulations')}
                   className="justify-start"
                 >
-                  Congratulazioni
+                  Congratulations
                 </Button>
               </div>
             </Card>
 
             {/* Communication History */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Storico Comunicazioni</h3>
+              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Communication History</h3>
               {student.communications && student.communications.length > 0 ? (
                 <div className="space-y-3">
                   {student.communications.map((comm) => (
                     <div key={comm.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
                       <div className="flex items-center space-x-4">
-                        <SafeIcon 
-                          icon={comm.type === 'email' ? FiIcons.FiMail : FiIcons.FiMessageSquare} 
-                          className="w-5 h-5 text-neutral-500" 
+                        <SafeIcon
+                          icon={comm.type === 'email' ? FiIcons.FiMail : FiIcons.FiMessageSquare}
+                          className="w-5 h-5 text-neutral-500"
                         />
                         <div>
                           <p className="font-medium text-neutral-800">{comm.subject}</p>
@@ -588,14 +583,14 @@ const StudentProfile = () => {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="success">Inviato</Badge>
+                      <Badge variant="success">Sent</Badge>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <SafeIcon icon={FiIcons.FiMail} className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                  <p className="text-neutral-500">Nessuna comunicazione inviata</p>
+                  <p className="text-neutral-500">No communications sent</p>
                 </div>
               )}
             </Card>
@@ -607,7 +602,7 @@ const StudentProfile = () => {
           <div className="space-y-6">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">Appuntamenti e Tutoring</h3>
+                <h3 className="text-lg font-semibold text-neutral-800">Appointments and Tutoring</h3>
                 <Button
                   icon={FiIcons.FiPlus}
                   onClick={() => {
@@ -615,20 +610,20 @@ const StudentProfile = () => {
                     setShowAppointmentModal(true);
                   }}
                 >
-                  Nuovo Appuntamento
+                  New Appointment
                 </Button>
               </div>
 
               {/* Calendar View */}
               <div className="mb-6">
                 <div className="grid grid-cols-7 gap-2 mb-4">
-                  {['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map((day) => (
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                     <div key={day} className="text-center py-2 bg-neutral-100 rounded-lg">
                       <span className="text-sm font-medium text-neutral-600">{day}</span>
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Simple Calendar Grid */}
                 <div className="grid grid-cols-7 gap-2">
                   {Array.from({ length: 35 }, (_, i) => {
@@ -637,12 +632,13 @@ const StudentProfile = () => {
                     const hasAppointment = student.appointments?.some(apt => 
                       apt.date === date.toISOString().split('T')[0]
                     );
-                    
                     return (
                       <div
                         key={i}
                         className={`aspect-square flex items-center justify-center text-sm border border-neutral-200 rounded-lg cursor-pointer transition-colors ${
-                          hasAppointment ? 'bg-primary-100 border-primary-300' : 'hover:bg-neutral-50'
+                          hasAppointment 
+                            ? 'bg-primary-100 border-primary-300' 
+                            : 'hover:bg-neutral-50'
                         }`}
                       >
                         <span className={hasAppointment ? 'font-bold text-primary-700' : 'text-neutral-600'}>
@@ -656,7 +652,7 @@ const StudentProfile = () => {
 
               {/* Appointments List */}
               <div>
-                <h4 className="font-medium text-neutral-800 mb-4">Prossimi Appuntamenti</h4>
+                <h4 className="font-medium text-neutral-800 mb-4">Upcoming Appointments</h4>
                 {student.appointments && student.appointments.length > 0 ? (
                   <div className="space-y-3">
                     {student.appointments.map((appointment) => (
@@ -668,7 +664,7 @@ const StudentProfile = () => {
                           <div>
                             <p className="font-medium text-neutral-800">{appointment.title}</p>
                             <p className="text-sm text-neutral-500">
-                              {new Date(appointment.date).toLocaleDateString('it-IT')} alle {appointment.time}
+                              {new Date(appointment.date).toLocaleDateString('it-IT')} at {appointment.time}
                             </p>
                             <p className="text-sm text-neutral-600">{appointment.description}</p>
                           </div>
@@ -696,7 +692,7 @@ const StudentProfile = () => {
                 ) : (
                   <div className="text-center py-8">
                     <SafeIcon icon={FiIcons.FiCalendar} className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                    <p className="text-neutral-500">Nessun appuntamento programmato</p>
+                    <p className="text-neutral-500">No appointments scheduled</p>
                   </div>
                 )}
               </div>
@@ -716,7 +712,7 @@ const StudentProfile = () => {
         <div className="flex items-center space-x-4">
           <Link to="/students">
             <Button variant="ghost" icon={FiIcons.FiArrowLeft}>
-              Indietro
+              Back
             </Button>
           </Link>
           <div>
@@ -724,22 +720,26 @@ const StudentProfile = () => {
               {student.firstName} {student.lastName}
             </h1>
             <p className="text-neutral-600 mt-1">
-              {student.course} • Iscritto il {new Date(student.enrollmentDate).toLocaleDateString('it-IT')}
+              {student.course} • Enrolled on {new Date(student.enrollmentDate).toLocaleDateString('it-IT')}
               {student.convertedFromLead && (
-                <span className="ml-2 text-accent-600 font-medium">• Convertito da Lead</span>
+                <span className="ml-2 text-accent-600 font-medium">• Converted from Lead</span>
               )}
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button variant="outline" icon={FiIcons.FiPhone} onClick={() => window.open(`tel:${student.phone}`)}>
-            Chiama
-          </Button>
-          <Button variant="outline" icon={FiIcons.FiMail} onClick={() => handleSendEmail('welcome')}>
+          <Button
+            variant="outline"
+            icon={FiIcons.FiMail}
+            onClick={() => handleSendEmail('welcome')}
+          >
             Email
           </Button>
-          <Button icon={FiIcons.FiFileText} onClick={() => generateStudentContract(student)}>
-            Contratto
+          <Button
+            icon={FiIcons.FiFileText}
+            onClick={() => generateStudentContract(student)}
+          >
+            Contract
           </Button>
         </div>
       </div>
@@ -761,18 +761,15 @@ const StudentProfile = () => {
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-neutral-800">{student.yearsToRecover}</p>
-            <p className="text-sm text-neutral-500">Anni da Recuperare</p>
+            <p className="text-sm text-neutral-500">Years to Recover</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-accent-600">€{student.paidAmount}</p>
-            <p className="text-sm text-neutral-500">Pagato / €{student.totalAmount}</p>
+            <p className="text-sm text-neutral-500">Paid / €{student.totalAmount}</p>
           </div>
           <div className="text-center">
-            <Badge 
-              variant={student.status === 'active' ? 'success' : 'warning'} 
-              className="text-base px-4 py-2"
-            >
-              {student.status === 'active' ? 'Attivo' : 'Sospeso'}
+            <Badge variant={student.status === 'active' ? 'success' : 'warning'} className="text-base px-4 py-2">
+              {student.status === 'active' ? 'Active' : 'Suspended'}
             </Badge>
           </div>
         </div>
@@ -814,7 +811,7 @@ const StudentProfile = () => {
           <DocumentUploadModal
             onClose={() => setShowDocumentUpload(false)}
             onUpload={handleDocumentUpload}
-            title="Carica Documento Studente"
+            title="Upload Student Document"
           />
         )}
         {showExamRequest && (

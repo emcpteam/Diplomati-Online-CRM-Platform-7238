@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
-import SafeIcon from '../utils/SafeIcon';
-import { Card, Button, Input } from '../components/UI';
-import MediaGallery from '../components/MediaGallery';
+import SafeIcon from '../common/SafeIcon';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 import { useApp } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
@@ -11,7 +12,8 @@ const CompanyConfig = () => {
   const { state, dispatch } = useApp();
   const [formData, setFormData] = useState(state.company);
   const [isEditing, setIsEditing] = useState(false);
-  const [showMediaGallery, setShowMediaGallery] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -20,26 +22,61 @@ const CompanyConfig = () => {
     }));
   };
 
-  const handleLogoSelect = (selectedMedia) => {
-    handleInputChange('logo', selectedMedia.url);
-    toast.success('Logo aggiornato con successo!');
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingLogo(true);
+    
+    try {
+      // Convert to base64 for local storage
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const logoUrl = e.target.result;
+        handleInputChange('logo', logoUrl);
+        setUploadingLogo(false);
+        toast.success('Logo uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      setUploadingLogo(false);
+      toast.error('Error uploading logo');
+    }
+  };
+
+  const handleDeleteLogo = () => {
+    if (window.confirm('Are you sure you want to delete the logo?')) {
+      handleInputChange('logo', null);
+      toast.success('Logo deleted successfully!');
+    }
   };
 
   const handleSave = () => {
     if (!formData.name.trim()) {
-      toast.error('Il nome dell\'azienda è obbligatorio');
+      toast.error('Company name is required');
       return;
     }
 
     dispatch({ type: 'SET_COMPANY', payload: formData });
     setIsEditing(false);
-    toast.success('Configurazione aziendale salvata con successo!');
+    toast.success('Company configuration saved successfully!');
   };
 
   const handleReset = () => {
     setFormData(state.company);
     setIsEditing(false);
-    toast.info('Modifiche ripristinate');
+    toast.info('Changes discarded');
   };
 
   const handleExportData = () => {
@@ -63,12 +100,12 @@ const CompanyConfig = () => {
     link.click();
     URL.revokeObjectURL(url);
 
-    toast.success('Dati aziendali esportati con successo!');
+    toast.success('Company data exported successfully!');
   };
 
   const handleGenerateReport = () => {
-    toast.loading('Generazione report in corso...', { id: 'report' });
-    
+    toast.loading('Generating report...', { id: 'report' });
+
     setTimeout(() => {
       const reportData = {
         period: new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }),
@@ -93,32 +130,32 @@ const CompanyConfig = () => {
       };
 
       const reportContent = `
-REPORT MENSILE - ${reportData.period}
+MONTHLY REPORT - ${reportData.period}
 
-STUDENTI:
-- Totali: ${reportData.students.total}
-- Attivi: ${reportData.students.active}
-- Nuovi questo mese: ${reportData.students.new}
+STUDENTS:
+- Total: ${reportData.students.total}
+- Active: ${reportData.students.active}
+- New this month: ${reportData.students.new}
 
-FATTURATO:
-- Incassato: €${reportData.revenue.total.toLocaleString()}
-- In sospeso: €${reportData.revenue.pending.toLocaleString()}
+REVENUE:
+- Collected: €${reportData.revenue.total.toLocaleString()}
+- Pending: €${reportData.revenue.pending.toLocaleString()}
 
-CORSI PIÙ RICHIESTI:
-${reportData.courses.map(c => `- ${c.name}: ${c.enrollments} iscrizioni`).join('\n')}
+TOP COURSES:
+${reportData.courses.map(c => `- ${c.name}: ${c.enrollments} enrollments`).join('\n')}
 
-Generato il: ${new Date().toLocaleDateString('it-IT')}
+Generated on: ${new Date().toLocaleDateString('it-IT')}
       `;
 
       const blob = new Blob([reportContent], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `report-mensile-${new Date().getMonth() + 1}-${new Date().getFullYear()}.txt`;
+      link.download = `monthly-report-${new Date().getMonth() + 1}-${new Date().getFullYear()}.txt`;
       link.click();
       URL.revokeObjectURL(url);
 
-      toast.success('Report mensile generato con successo!', { id: 'report' });
+      toast.success('Monthly report generated successfully!', { id: 'report' });
     }, 2000);
   };
 
@@ -128,25 +165,35 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-display font-bold text-neutral-800">
-            Configurazione Azienda
+            Company Configuration
           </h1>
           <p className="text-neutral-600 mt-2">
-            Configura le informazioni principali dell'azienda
+            Configure main company information
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
           {isEditing ? (
             <>
-              <Button variant="outline" icon={FiIcons.FiRefreshCw} onClick={handleReset}>
-                Ripristina
+              <Button
+                variant="outline"
+                icon={FiIcons.FiRefreshCw}
+                onClick={handleReset}
+              >
+                Reset
               </Button>
-              <Button icon={FiIcons.FiSave} onClick={handleSave}>
-                Salva Modifiche
+              <Button
+                icon={FiIcons.FiSave}
+                onClick={handleSave}
+              >
+                Save Changes
               </Button>
             </>
           ) : (
-            <Button icon={FiIcons.FiEdit} onClick={() => setIsEditing(true)}>
-              Modifica
+            <Button
+              icon={FiIcons.FiEdit}
+              onClick={() => setIsEditing(true)}
+            >
+              Edit
             </Button>
           )}
         </div>
@@ -155,7 +202,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Company Logo */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-          Logo Aziendale
+          Company Logo
         </h3>
         <div className="flex items-center space-x-6">
           <div className="relative">
@@ -171,31 +218,46 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
               )}
             </div>
           </div>
+          
           <div className="flex-1">
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                icon={FiIcons.FiImage}
-                onClick={() => setShowMediaGallery(true)}
-                disabled={!isEditing}
-              >
-                {formData.logo ? 'Cambia Logo' : 'Carica Logo'}
-              </Button>
+            <div className="flex items-center space-x-3 mb-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                disabled={!isEditing || uploadingLogo}
+                className="hidden"
+                id="logo-upload"
+              />
+              
+              <label htmlFor="logo-upload">
+                <Button
+                  as="span"
+                  variant="outline"
+                  icon={uploadingLogo ? FiIcons.FiLoader : FiIcons.FiImage}
+                  disabled={!isEditing || uploadingLogo}
+                >
+                  {uploadingLogo ? 'Uploading...' : formData.logo ? 'Change Logo' : 'Upload Logo'}
+                </Button>
+              </label>
+              
               {formData.logo && isEditing && (
                 <Button
                   variant="outline"
                   icon={FiIcons.FiTrash2}
-                  onClick={() => handleInputChange('logo', null)}
+                  onClick={handleDeleteLogo}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
                 >
-                  Rimuovi
+                  Delete
                 </Button>
               )}
             </div>
+            
             <p className="text-sm text-neutral-500 mt-2">
-              Formati supportati: JPG, PNG, SVG. Max 5MB.
+              Supported formats: JPG, PNG, SVG. Max 5MB.
             </p>
             <p className="text-sm text-neutral-400 mt-1">
-              Il logo verrà ridimensionato automaticamente per adattarsi.
+              Logo will be automatically resized to fit.
             </p>
           </div>
         </div>
@@ -204,11 +266,11 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Company Information */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-6">
-          Informazioni Aziendali
+          Company Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
-            label="Ragione Sociale *"
+            label="Company Name *"
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
             placeholder="Diplomati Online Srl"
@@ -216,7 +278,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Partita IVA"
+            label="VAT Number"
             value={formData.vatId}
             onChange={(e) => handleInputChange('vatId', e.target.value)}
             placeholder="IT12345678901"
@@ -224,7 +286,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Codice SDI"
+            label="SDI Code"
             value={formData.sdiCode}
             onChange={(e) => handleInputChange('sdiCode', e.target.value)}
             placeholder="ABCDEFG"
@@ -232,7 +294,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Indirizzo"
+            label="Address"
             value={formData.address}
             onChange={(e) => handleInputChange('address', e.target.value)}
             placeholder="Via Roma 123"
@@ -240,7 +302,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Città"
+            label="City"
             value={formData.city}
             onChange={(e) => handleInputChange('city', e.target.value)}
             placeholder="Milano"
@@ -248,7 +310,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Provincia"
+            label="Province"
             value={formData.province}
             onChange={(e) => handleInputChange('province', e.target.value)}
             placeholder="MI"
@@ -261,7 +323,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Contact Information */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-6">
-          Informazioni di Contatto
+          Contact Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
@@ -283,7 +345,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             readOnly={!isEditing}
           />
           <Input
-            label="Telefono"
+            label="Phone"
             type="tel"
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -306,12 +368,12 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Notes */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-          Note Aggiuntive
+          Additional Notes
         </h3>
         <textarea
           value={formData.notes}
           onChange={(e) => handleInputChange('notes', e.target.value)}
-          placeholder="Inserisci note aggiuntive sull'azienda..."
+          placeholder="Enter additional company notes..."
           className={`w-full h-32 px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none ${
             !isEditing ? 'bg-neutral-50 cursor-not-allowed' : ''
           }`}
@@ -322,7 +384,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Company Statistics */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-6">
-          Statistiche Aziendali
+          Company Statistics
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
           <motion.div
@@ -330,21 +392,21 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             className="p-4 bg-primary-50 rounded-xl"
           >
             <p className="text-2xl font-bold text-primary-600">{state.students.length}</p>
-            <p className="text-sm text-neutral-500">Studenti Totali</p>
+            <p className="text-sm text-neutral-500">Total Students</p>
           </motion.div>
           <motion.div
             whileHover={{ scale: 1.05 }}
             className="p-4 bg-secondary-50 rounded-xl"
           >
             <p className="text-2xl font-bold text-secondary-600">{state.schools.length}</p>
-            <p className="text-sm text-neutral-500">Scuole Partner</p>
+            <p className="text-sm text-neutral-500">Partner Schools</p>
           </motion.div>
           <motion.div
             whileHover={{ scale: 1.05 }}
             className="p-4 bg-accent-50 rounded-xl"
           >
             <p className="text-2xl font-bold text-accent-600">{state.courses.length}</p>
-            <p className="text-sm text-neutral-500">Corsi Attivi</p>
+            <p className="text-sm text-neutral-500">Active Courses</p>
           </motion.div>
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -353,7 +415,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             <p className="text-2xl font-bold text-orange-600">
               {state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}€
             </p>
-            <p className="text-sm text-neutral-500">Fatturato Totale</p>
+            <p className="text-sm text-neutral-500">Total Revenue</p>
           </motion.div>
         </div>
       </Card>
@@ -361,7 +423,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
       {/* Quick Actions */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-          Azioni Rapide
+          Quick Actions
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
@@ -370,7 +432,7 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             className="justify-start"
             onClick={handleExportData}
           >
-            Esporta Dati Aziendali
+            Export Company Data
           </Button>
           <Button
             variant="outline"
@@ -378,27 +440,18 @@ Generato il: ${new Date().toLocaleDateString('it-IT')}
             className="justify-start"
             onClick={handleGenerateReport}
           >
-            Genera Report Mensile
+            Generate Monthly Report
           </Button>
           <Button
             variant="outline"
             icon={FiIcons.FiSettings}
             className="justify-start"
-            onClick={() => toast.info('Configurazioni avanzate in sviluppo!')}
+            onClick={() => toast.info('Advanced settings coming soon!')}
           >
-            Configurazioni Avanzate
+            Advanced Settings
           </Button>
         </div>
       </Card>
-
-      {/* Media Gallery Modal */}
-      <MediaGallery
-        isOpen={showMediaGallery}
-        onClose={() => setShowMediaGallery(false)}
-        onSelect={handleLogoSelect}
-        allowedTypes={['image/*']}
-        title="Seleziona Logo Aziendale"
-      />
     </div>
   );
 };

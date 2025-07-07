@@ -16,7 +16,6 @@ const Header = ({ setSidebarOpen }) => {
 
   const handleGlobalSearch = (term) => {
     if (!term.trim()) return [];
-
     const results = [];
 
     // Search students
@@ -100,14 +99,14 @@ const Header = ({ setSidebarOpen }) => {
 
   const QuickActionsModal = () => {
     const quickActions = [
-      { title: 'Aggiungi Studente', icon: FiIcons.FiUserPlus, color: 'from-blue-500 to-blue-600', action: () => window.location.hash = '/students' },
-      { title: 'Nuovo Lead', icon: FiIcons.FiTarget, color: 'from-green-500 to-green-600', action: () => window.location.hash = '/leads' },
-      { title: 'Aggiungi Scuola', icon: FiIcons.FiMapPin, color: 'from-purple-500 to-purple-600', action: () => window.location.hash = '/schools' },
-      { title: 'Crea Corso', icon: FiIcons.FiBookOpen, color: 'from-orange-500 to-orange-600', action: () => window.location.hash = '/courses' },
-      { title: 'Genera Report', icon: FiIcons.FiFileText, color: 'from-red-500 to-red-600', action: () => window.location.hash = '/analytics' },
-      { title: 'Invia Email Massiva', icon: FiIcons.FiMail, color: 'from-indigo-500 to-indigo-600', action: () => console.log('Email massiva') },
-      { title: 'Backup Dati', icon: FiIcons.FiDatabase, color: 'from-gray-500 to-gray-600', action: () => console.log('Backup') },
-      { title: 'Sincronizza Lead', icon: FiIcons.FiRefreshCw, color: 'from-teal-500 to-teal-600', action: () => window.location.hash = '/leads' }
+      { title: 'Add Student', icon: FiIcons.FiUserPlus, color: 'from-blue-500 to-blue-600', action: () => window.location.hash = '/students' },
+      { title: 'New Lead', icon: FiIcons.FiTarget, color: 'from-green-500 to-green-600', action: () => window.location.hash = '/leads' },
+      { title: 'Add School', icon: FiIcons.FiMapPin, color: 'from-purple-500 to-purple-600', action: () => window.location.hash = '/schools' },
+      { title: 'Create Course', icon: FiIcons.FiBookOpen, color: 'from-orange-500 to-orange-600', action: () => window.location.hash = '/courses' },
+      { title: 'Generate Report', icon: FiIcons.FiFileText, color: 'from-red-500 to-red-600', action: () => window.location.hash = '/analytics' },
+      { title: 'Mass Email', icon: FiIcons.FiMail, color: 'from-indigo-500 to-indigo-600', action: () => console.log('Mass email') },
+      { title: 'Data Backup', icon: FiIcons.FiDatabase, color: 'from-gray-500 to-gray-600', action: () => console.log('Backup') },
+      { title: 'Sync Leads', icon: FiIcons.FiRefreshCw, color: 'from-teal-500 to-teal-600', action: () => window.location.hash = '/leads' }
     ];
 
     return (
@@ -127,8 +126,12 @@ const Header = ({ setSidebarOpen }) => {
         >
           <div className="p-6 border-b border-neutral-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-neutral-800">Azioni Rapide</h2>
-              <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowQuickActions(false)} />
+              <h2 className="text-2xl font-bold text-neutral-800">Quick Actions</h2>
+              <Button
+                variant="ghost"
+                icon={FiIcons.FiX}
+                onClick={() => setShowQuickActions(false)}
+              />
             </div>
           </div>
           <div className="p-6">
@@ -171,18 +174,12 @@ const Header = ({ setSidebarOpen }) => {
           >
             <SafeIcon icon={FiIcons.FiMenu} className="w-6 h-6 text-neutral-600" />
           </motion.button>
-
           <div>
             <h2 className="text-lg font-display font-semibold text-neutral-800">
-              Benvenuto, {state.user.name}
+              Welcome, {state.user.name}
             </h2>
             <p className="text-sm text-neutral-500">
-              {new Date().toLocaleDateString('it-IT', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {new Date().toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
         </div>
@@ -212,16 +209,19 @@ const Header = ({ setSidebarOpen }) => {
                 className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-strong border border-neutral-200 py-4 z-50"
               >
                 <div className="px-4 pb-2 border-b border-neutral-200">
-                  <h3 className="font-medium text-neutral-800">Notifiche</h3>
+                  <h3 className="font-medium text-neutral-800">Notifications</h3>
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {state.notifications.length === 0 ? (
                     <p className="text-sm text-neutral-500 text-center py-8">
-                      Nessuna notifica
+                      No notifications
                     </p>
                   ) : (
                     state.notifications.map((notification) => (
-                      <div key={notification.id} className="px-4 py-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0">
+                      <div
+                        key={notification.id}
+                        className="px-4 py-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0"
+                      >
                         <p className="text-sm text-neutral-800">{notification.message}</p>
                         <p className="text-xs text-neutral-500 mt-1">{notification.time}</p>
                       </div>
@@ -253,7 +253,7 @@ const Header = ({ setSidebarOpen }) => {
                 >
                   <div className="p-4">
                     <Input
-                      placeholder="Cerca in tutto il CRM..."
+                      placeholder="Search throughout CRM..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       icon={FiIcons.FiSearch}
@@ -284,7 +284,7 @@ const Header = ({ setSidebarOpen }) => {
 
                   {searchTerm.length > 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center">
-                      <p className="text-sm text-neutral-500">Nessun risultato trovato</p>
+                      <p className="text-sm text-neutral-500">No results found</p>
                     </div>
                   )}
                 </motion.div>
@@ -340,14 +340,14 @@ const Header = ({ setSidebarOpen }) => {
                       className="w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-neutral-50 transition-colors"
                     >
                       <SafeIcon icon={FiIcons.FiUser} className="w-4 h-4 text-neutral-500" />
-                      <span className="text-sm text-neutral-700">Profilo</span>
+                      <span className="text-sm text-neutral-700">Profile</span>
                     </button>
                     <button
                       onClick={() => window.location.hash = '/integrations'}
                       className="w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-neutral-50 transition-colors"
                     >
                       <SafeIcon icon={FiIcons.FiSettings} className="w-4 h-4 text-neutral-500" />
-                      <span className="text-sm text-neutral-700">Impostazioni</span>
+                      <span className="text-sm text-neutral-700">Settings</span>
                     </button>
                     <div className="border-t border-neutral-200 mt-2 pt-2">
                       <button
