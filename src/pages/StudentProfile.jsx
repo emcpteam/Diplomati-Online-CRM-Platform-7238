@@ -75,11 +75,9 @@ const StudentProfile = () => {
     const remainingAmount = student.totalAmount - student.paidAmount;
     const monthlyPayment = remainingAmount / 12; // Example: 12 months
     const installments = [];
-    
     for (let i = 0; i < 12; i++) {
       const dueDate = new Date();
       dueDate.setMonth(dueDate.getMonth() + i + 1);
-      
       installments.push({
         id: i + 1,
         amount: monthlyPayment,
@@ -88,7 +86,6 @@ const StudentProfile = () => {
         paid: false
       });
     }
-    
     return installments;
   };
 
@@ -116,7 +113,6 @@ const StudentProfile = () => {
     try {
       const emailData = emailTemplates[template](student);
       await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
-      
       const updatedStudent = {
         ...student,
         communications: [
@@ -131,7 +127,6 @@ const StudentProfile = () => {
           }
         ]
       };
-      
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
@@ -163,7 +158,10 @@ const StudentProfile = () => {
                   onClick={() => {
                     if (editingProfile) {
                       // Save changes
-                      dispatch({ type: 'UPDATE_STUDENT', payload: { ...student, ...profileData } });
+                      dispatch({
+                        type: 'UPDATE_STUDENT',
+                        payload: { ...student, ...profileData }
+                      });
                       toast.success('Profilo aggiornato!');
                     } else {
                       setProfileData(student);
@@ -174,7 +172,6 @@ const StudentProfile = () => {
                   {editingProfile ? 'Salva' : 'Modifica'}
                 </Button>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Nome"
@@ -214,7 +211,6 @@ const StudentProfile = () => {
                   readOnly={!editingProfile}
                 />
               </div>
-
               <div className="mt-4">
                 <Input
                   label="Indirizzo Completo"
@@ -231,14 +227,10 @@ const StudentProfile = () => {
                 <h3 className="text-lg font-semibold text-neutral-800">
                   Documenti ({student.documents?.length || 0})
                 </h3>
-                <Button
-                  icon={FiIcons.FiUpload}
-                  onClick={() => setShowDocumentUpload(true)}
-                >
+                <Button icon={FiIcons.FiUpload} onClick={() => setShowDocumentUpload(true)}>
                   Carica Documento
                 </Button>
               </div>
-
               {student.documents && student.documents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {student.documents.map((doc) => (
@@ -272,14 +264,12 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       case 'subscription':
         const assignedSchool = getAssignedSchool();
         return (
           <div className="space-y-6">
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-neutral-800 mb-6">Dettagli Iscrizione</h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -297,7 +287,6 @@ const StudentProfile = () => {
                     </p>
                   </div>
                 </div>
-                
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm text-neutral-500">Stato</label>
@@ -344,25 +333,19 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       case 'payments':
         const paymentProgress = getPaymentProgress();
         const installments = calculateInstallments();
-        
         return (
           <div className="space-y-6">
             {/* Payment Overview */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-neutral-800">Panoramica Pagamenti</h3>
-                <Button
-                  icon={FiIcons.FiPlus}
-                  onClick={() => setShowPaymentModal(true)}
-                >
+                <Button icon={FiIcons.FiPlus} onClick={() => setShowPaymentModal(true)}>
                   Registra Pagamento
                 </Button>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center p-4 bg-neutral-50 rounded-xl">
                   <p className="text-2xl font-bold text-neutral-800">€{student.totalAmount}</p>
@@ -377,7 +360,6 @@ const StudentProfile = () => {
                   <p className="text-sm text-neutral-500">Rimanente</p>
                 </div>
               </div>
-
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-neutral-500">Progresso Pagamenti</span>
@@ -400,12 +382,20 @@ const StudentProfile = () => {
                 <h3 className="text-lg font-semibold text-neutral-800 mb-4">Piano Rate</h3>
                 <div className="space-y-3">
                   {installments.map((installment) => (
-                    <div key={installment.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
+                    <div
+                      key={installment.id}
+                      className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl"
+                    >
                       <div className="flex items-center space-x-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          installment.paid ? 'bg-accent-500' : 
-                          installment.status === 'upcoming' ? 'bg-orange-500' : 'bg-neutral-300'
-                        }`}>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            installment.paid
+                              ? 'bg-accent-500'
+                              : installment.status === 'upcoming'
+                                ? 'bg-orange-500'
+                                : 'bg-neutral-300'
+                          }`}
+                        >
                           <span className="text-white font-medium text-sm">{installment.id}</span>
                         </div>
                         <div>
@@ -417,12 +407,20 @@ const StudentProfile = () => {
                           </p>
                         </div>
                       </div>
-                      <Badge variant={
-                        installment.paid ? 'success' :
-                        installment.status === 'upcoming' ? 'warning' : 'default'
-                      }>
-                        {installment.paid ? 'Pagata' : 
-                         installment.status === 'upcoming' ? 'Prossima' : 'In attesa'}
+                      <Badge
+                        variant={
+                          installment.paid
+                            ? 'success'
+                            : installment.status === 'upcoming'
+                              ? 'warning'
+                              : 'default'
+                        }
+                      >
+                        {installment.paid
+                          ? 'Pagata'
+                          : installment.status === 'upcoming'
+                            ? 'Prossima'
+                            : 'In attesa'}
                       </Badge>
                     </div>
                   ))}
@@ -436,7 +434,10 @@ const StudentProfile = () => {
               {student.payments && student.payments.length > 0 ? (
                 <div className="space-y-3">
                   {student.payments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl">
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl"
+                    >
                       <div>
                         <p className="font-medium text-neutral-800">€{payment.amount}</p>
                         <p className="text-sm text-neutral-500">
@@ -453,7 +454,6 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       case 'exams':
         return (
           <div className="space-y-6">
@@ -468,7 +468,6 @@ const StudentProfile = () => {
                   Richiesta Esame
                 </Button>
               </div>
-
               {!student.assignedSchool && (
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl mb-6">
                   <div className="flex items-center space-x-3">
@@ -482,7 +481,6 @@ const StudentProfile = () => {
                   </div>
                 </div>
               )}
-
               {student.exams && student.exams.length > 0 ? (
                 <div className="space-y-4">
                   {student.exams.map((exam) => (
@@ -491,10 +489,15 @@ const StudentProfile = () => {
                         <h4 className="font-medium text-neutral-800">
                           Esame - {exam.examType}
                         </h4>
-                        <Badge variant={
-                          exam.status === 'completed' ? 'success' :
-                          exam.status === 'scheduled' ? 'warning' : 'default'
-                        }>
+                        <Badge
+                          variant={
+                            exam.status === 'completed'
+                              ? 'success'
+                              : exam.status === 'scheduled'
+                                ? 'warning'
+                                : 'default'
+                          }
+                        >
                           {exam.status}
                         </Badge>
                       </div>
@@ -526,7 +529,6 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       case 'communication':
         return (
           <div className="space-y-6">
@@ -575,11 +577,14 @@ const StudentProfile = () => {
               {student.communications && student.communications.length > 0 ? (
                 <div className="space-y-3">
                   {student.communications.map((comm) => (
-                    <div key={comm.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
+                    <div
+                      key={comm.id}
+                      className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl"
+                    >
                       <div className="flex items-center space-x-4">
-                        <SafeIcon 
-                          icon={comm.type === 'email' ? FiIcons.FiMail : FiIcons.FiMessageSquare} 
-                          className="w-5 h-5 text-neutral-500" 
+                        <SafeIcon
+                          icon={comm.type === 'email' ? FiIcons.FiMail : FiIcons.FiMessageSquare}
+                          className="w-5 h-5 text-neutral-500"
                         />
                         <div>
                           <p className="font-medium text-neutral-800">{comm.subject}</p>
@@ -601,7 +606,6 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       case 'calendar':
         return (
           <div className="space-y-6">
@@ -628,16 +632,15 @@ const StudentProfile = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Simple Calendar Grid */}
                 <div className="grid grid-cols-7 gap-2">
                   {Array.from({ length: 35 }, (_, i) => {
                     const date = new Date();
                     date.setDate(date.getDate() - date.getDay() + i - 6);
-                    const hasAppointment = student.appointments?.some(apt => 
-                      apt.date === date.toISOString().split('T')[0]
+                    const hasAppointment = student.appointments?.some(
+                      apt => apt.date === date.toISOString().split('T')[0]
                     );
-                    
                     return (
                       <div
                         key={i}
@@ -660,7 +663,10 @@ const StudentProfile = () => {
                 {student.appointments && student.appointments.length > 0 ? (
                   <div className="space-y-3">
                     {student.appointments.map((appointment) => (
-                      <div key={appointment.id} className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl">
+                      <div
+                        key={appointment.id}
+                        className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl"
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
                             <SafeIcon icon={FiIcons.FiCalendar} className="w-5 h-5 text-primary-600" />
@@ -683,10 +689,15 @@ const StudentProfile = () => {
                               setShowAppointmentModal(true);
                             }}
                           />
-                          <Badge variant={
-                            appointment.status === 'completed' ? 'success' :
-                            appointment.status === 'cancelled' ? 'danger' : 'warning'
-                          }>
+                          <Badge
+                            variant={
+                              appointment.status === 'completed'
+                                ? 'success'
+                                : appointment.status === 'cancelled'
+                                  ? 'danger'
+                                  : 'warning'
+                            }
+                          >
                             {appointment.status}
                           </Badge>
                         </div>
@@ -703,7 +714,6 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-
       default:
         return null;
     }
@@ -732,9 +742,6 @@ const StudentProfile = () => {
           </div>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button variant="outline" icon={FiIcons.FiPhone} onClick={() => window.open(`tel:${student.phone}`)}>
-            Chiama
-          </Button>
           <Button variant="outline" icon={FiIcons.FiMail} onClick={() => handleSendEmail('welcome')}>
             Email
           </Button>
@@ -768,8 +775,8 @@ const StudentProfile = () => {
             <p className="text-sm text-neutral-500">Pagato / €{student.totalAmount}</p>
           </div>
           <div className="text-center">
-            <Badge 
-              variant={student.status === 'active' ? 'success' : 'warning'} 
+            <Badge
+              variant={student.status === 'active' ? 'success' : 'warning'}
               className="text-base px-4 py-2"
             >
               {student.status === 'active' ? 'Attivo' : 'Sospeso'}

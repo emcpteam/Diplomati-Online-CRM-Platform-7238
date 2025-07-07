@@ -31,9 +31,9 @@ const LeadManagement = () => {
 
   const filteredLeads = state.leads
     .filter(lead => {
-      const matchesSearch = lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          lead.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || lead.status === filterStatus;
       return matchesSearch && matchesStatus;
     })
@@ -109,11 +109,9 @@ const LeadManagement = () => {
           communications: []
         }
       ];
-
       newLeads.forEach(lead => {
         dispatch({ type: 'ADD_LEAD', payload: lead });
       });
-
       toast.success(`Sincronizzazione completata! ${newLeads.length} nuovi lead importati.`, { id: 'sync' });
     }, 2000);
   };
@@ -173,7 +171,6 @@ const LeadManagement = () => {
         assignedTo: null,
         communications: []
       };
-
       dispatch({ type: 'ADD_LEAD', payload: newLead });
       toast.success('Lead aggiunto con successo!');
       setShowAddModal(false);
@@ -212,7 +209,6 @@ const LeadManagement = () => {
               <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowAddModal(false)} />
             </div>
           </div>
-
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -228,7 +224,6 @@ const LeadManagement = () => {
                 required
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Email *"
@@ -244,7 +239,6 @@ const LeadManagement = () => {
                 required
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Città"
@@ -257,7 +251,6 @@ const LeadManagement = () => {
                 onChange={(e) => setFormData({ ...formData, studyPlan: e.target.value })}
               />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 label="Anni da Recuperare"
@@ -296,7 +289,6 @@ const LeadManagement = () => {
                 </select>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-2">Note</label>
               <textarea
@@ -306,13 +298,8 @@ const LeadManagement = () => {
                 className="w-full h-24 px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
               />
             </div>
-
             <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setShowAddModal(false)}
-              >
+              <Button variant="outline" type="button" onClick={() => setShowAddModal(false)}>
                 Annulla
               </Button>
               <Button type="submit" icon={FiIcons.FiSave}>
@@ -343,10 +330,7 @@ const LeadManagement = () => {
     React.useEffect(() => {
       if (quote.paymentMethod === 'hybrid' && quote.installments > 0) {
         const remaining = (quote.basePrice - quote.promoPrice - quote.advancePayment);
-        setQuote(prev => ({
-          ...prev,
-          installmentAmount: Math.round(remaining / quote.installments)
-        }));
+        setQuote(prev => ({ ...prev, installmentAmount: Math.round(remaining / quote.installments) }));
       }
     }, [quote.basePrice, quote.promoPrice, quote.advancePayment, quote.installments, quote.paymentMethod]);
 
@@ -364,7 +348,6 @@ const LeadManagement = () => {
         toast.error('Seleziona un corso');
         return;
       }
-
       generateQuotePDF(quote);
       toast.success('Preventivo generato e scaricato!');
       updateLeadStatus(lead.id, 'qualified');
@@ -392,7 +375,6 @@ const LeadManagement = () => {
               <Button variant="ghost" icon={FiIcons.FiX} onClick={onClose} />
             </div>
           </div>
-
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -534,7 +516,6 @@ const LeadManagement = () => {
               </div>
             </div>
           </div>
-
           <div className="p-6 border-t border-neutral-200">
             <div className="flex items-center justify-end space-x-3">
               <Button variant="outline" onClick={onClose}>
@@ -629,7 +610,6 @@ const LeadManagement = () => {
                 </div>
                 {getStatusBadge(lead.status)}
               </div>
-
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Piano di studi:</span>
@@ -660,15 +640,7 @@ const LeadManagement = () => {
 
               {/* Action Buttons */}
               <div className="mt-6 pt-4 border-t border-neutral-200">
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={FiIcons.FiPhone}
-                    onClick={() => window.open(`tel:${lead.phone}`)}
-                  >
-                    Chiama
-                  </Button>
+                <div className="grid grid-cols-3 gap-2 mb-3">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -703,7 +675,6 @@ const LeadManagement = () => {
                     Note
                   </Button>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <select
                     value={lead.status}
@@ -717,7 +688,6 @@ const LeadManagement = () => {
                     <option value="da_ricontattare">Da Ricontattare</option>
                     <option value="lost">Perso</option>
                   </select>
-
                   {lead.status !== 'converted' ? (
                     <Button
                       variant="ghost"

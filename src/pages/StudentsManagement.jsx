@@ -26,9 +26,9 @@ const StudentsManagement = () => {
 
   const filteredStudents = state.students
     .filter(student => {
-      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
       const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
       return matchesSearch && matchesStatus && matchesCourse;
@@ -83,7 +83,6 @@ const StudentsManagement = () => {
       'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
       'Scuola Esami': getAssignedSchool(student)?.name || 'Non assegnata'
     }));
-
     exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
     toast.success('Export completato con successo!');
   };
@@ -93,7 +92,6 @@ const StudentsManagement = () => {
     try {
       const emailData = emailTemplates[template](student);
       await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
-
       const updatedStudent = {
         ...student,
         communications: [
@@ -107,7 +105,6 @@ const StudentsManagement = () => {
           }
         ]
       };
-
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
@@ -203,7 +200,6 @@ const StudentsManagement = () => {
         {filteredStudents.map((student, index) => {
           const paymentProgress = getPaymentProgress(student);
           const assignedSchool = getAssignedSchool(student);
-
           return (
             <motion.div
               key={student.id}
@@ -228,13 +224,11 @@ const StudentsManagement = () => {
                   </div>
                   {getStatusBadge(student.status)}
                 </div>
-
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Corso:</span>
                     <span className="font-medium text-neutral-800">{student.course}</span>
                   </div>
-
                   {/* School Assignment */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Scuola Esami:</span>
@@ -255,7 +249,6 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-neutral-500">Pagamenti:</span>
@@ -270,7 +263,6 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
-
                   {student.convertedFromLead && (
                     <div className="flex items-center space-x-2">
                       <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
@@ -287,21 +279,12 @@ const StudentsManagement = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      icon={FiIcons.FiPhone}
-                      onClick={() => window.open(`tel:${student.phone}`)}
-                    >
-                      Chiama
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       icon={FiIcons.FiMail}
                       onClick={() => handleSendEmail(student, 'welcome')}
                     >
                       Email
                     </Button>
                   </div>
-
                   <div className="flex items-center justify-between">
                     <Button
                       variant="outline"
@@ -316,9 +299,7 @@ const StudentsManagement = () => {
                       Modifica
                     </Button>
                     <Link to={`/students/${student.id}`}>
-                      <Button size="sm" icon={FiIcons.FiEye}>
-                        Dettagli
-                      </Button>
+                      <Button size="sm" icon={FiIcons.FiEye}>Dettagli</Button>
                     </Link>
                   </div>
                 </div>

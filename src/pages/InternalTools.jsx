@@ -40,7 +40,6 @@ const InternalTools = () => {
   const tabs = [
     { id: 'course-creation', label: 'Creazione Corsi', icon: FiIcons.FiBookOpen },
     { id: 'autocomplete', label: 'Campi Autocomplete', icon: FiIcons.FiEdit3 },
-    { id: 'lead-recycle', label: 'Riciclo Lead', icon: FiIcons.FiRecycle },
     { id: 'import-export', label: 'Import/Export', icon: FiIcons.FiDatabase },
     { id: 'pdf-tools', label: 'Strumenti PDF', icon: FiIcons.FiFileText },
     { id: 'file-repository', label: 'Repository File', icon: FiIcons.FiFolderOpen },
@@ -88,7 +87,6 @@ const InternalTools = () => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      
       if (!formData.name.trim() || !formData.deadline) {
         toast.error('Compila tutti i campi obbligatori');
         return;
@@ -171,11 +169,7 @@ const InternalTools = () => {
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setShowActivityModal(false)}
-              >
+              <Button variant="outline" type="button" onClick={() => setShowActivityModal(false)}>
                 Annulla
               </Button>
               <Button type="submit" icon={FiIcons.FiSave}>
@@ -217,10 +211,7 @@ const InternalTools = () => {
                 <h3 className="text-lg font-semibold text-neutral-800">
                   Corso in Creazione: {courseProgress.name}
                 </h3>
-                <Button
-                  icon={FiIcons.FiPlus}
-                  onClick={handleAddActivity}
-                >
+                <Button icon={FiIcons.FiPlus} onClick={handleAddActivity}>
                   Nuova Attività
                 </Button>
               </div>
@@ -254,9 +245,7 @@ const InternalTools = () => {
                         )}
                       </button>
                       <div>
-                        <p className={`font-medium ${
-                          task.completed ? 'text-neutral-600 line-through' : 'text-neutral-800'
-                        }`}>
+                        <p className={`font-medium ${task.completed ? 'text-neutral-600 line-through' : 'text-neutral-800'}`}>
                           {task.name}
                         </p>
                         <p className="text-sm text-neutral-500">Scadenza: {task.deadline}</p>
@@ -266,12 +255,7 @@ const InternalTools = () => {
                       <Badge variant={task.completed ? 'success' : 'warning'}>
                         {task.completed ? 'Completata' : 'In corso'}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        icon={FiIcons.FiEdit}
-                        onClick={() => handleEditActivity(task)}
-                      />
+                      <Button variant="ghost" size="sm" icon={FiIcons.FiEdit} onClick={() => handleEditActivity(task)} />
                       <Button
                         variant="ghost"
                         size="sm"
@@ -282,6 +266,7 @@ const InternalTools = () => {
                     </div>
                   </div>
                 ))}
+
                 {courseProgress.tasks.length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-neutral-500 mb-4">Nessuna attività presente</p>
@@ -302,7 +287,7 @@ const InternalTools = () => {
               <h3 className="text-lg font-semibold text-neutral-800 mb-4">
                 Configurazione Campi Autocomplete
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <select
                   value={newField.category}
@@ -347,62 +332,6 @@ const InternalTools = () => {
           </div>
         );
 
-      case 'lead-recycle':
-        return (
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-                Centro Riciclo Lead
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium text-neutral-800">Lead Inattivi (30+ giorni)</h4>
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Marco Bianchi', days: 45, source: 'Google Ads' },
-                      { name: 'Anna Rossi', days: 38, source: 'Facebook' },
-                      { name: 'Luigi Verdi', days: 52, source: 'Instagram' }
-                    ].map((lead, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl">
-                        <div>
-                          <p className="font-medium text-neutral-800">{lead.name}</p>
-                          <p className="text-sm text-neutral-500">{lead.days} giorni fa • {lead.source}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" icon={FiIcons.FiMail}>
-                            Email
-                          </Button>
-                          <Button variant="ghost" size="sm" icon={FiIcons.FiMessageSquare}>
-                            SMS
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-medium text-neutral-800">Azioni Automatiche</h4>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Button variant="outline" icon={FiIcons.FiMail}>
-                      Invia Email Riattivazione
-                    </Button>
-                    <Button variant="outline" icon={FiIcons.FiMessageSquare}>
-                      Invia SMS Promozionale
-                    </Button>
-                    <Button variant="outline" icon={FiIcons.FiTag}>
-                      Applica Tag "Ricontatto"
-                    </Button>
-                    <Button variant="outline" icon={FiIcons.FiUserPlus}>
-                      Assegna a Sales Manager
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        );
-
       case 'import-export':
         return (
           <div className="space-y-6">
@@ -425,7 +354,6 @@ const InternalTools = () => {
                     </Button>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <h4 className="font-medium text-neutral-800">Esporta Dati</h4>
                   <div className="space-y-3">
