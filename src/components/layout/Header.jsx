@@ -16,7 +16,6 @@ const Header = ({ setSidebarOpen }) => {
 
   const handleGlobalSearch = (term) => {
     if (!term.trim()) return [];
-
     const results = [];
 
     // Search students
@@ -115,7 +114,7 @@ const Header = ({ setSidebarOpen }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
         onClick={() => setShowQuickActions(false)}
       >
         <motion.div
@@ -159,7 +158,7 @@ const Header = ({ setSidebarOpen }) => {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/50 px-6 py-4">
+    <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/50 px-6 py-4 relative z-40">
       <div className="flex items-center justify-between">
         {/* Left side */}
         <div className="flex items-center space-x-4">
@@ -171,18 +170,12 @@ const Header = ({ setSidebarOpen }) => {
           >
             <SafeIcon icon={FiIcons.FiMenu} className="w-6 h-6 text-neutral-600" />
           </motion.button>
-
           <div>
             <h2 className="text-lg font-display font-semibold text-neutral-800">
               Benvenuto, {state.user.name}
             </h2>
             <p className="text-sm text-neutral-500">
-              {new Date().toLocaleDateString('it-IT', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {new Date().toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
         </div>
@@ -204,12 +197,11 @@ const Header = ({ setSidebarOpen }) => {
                 </span>
               )}
             </motion.button>
-
             {showNotifications && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-strong border border-neutral-200 py-4 z-50"
+                className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-strong border border-neutral-200 py-4 z-[100]"
               >
                 <div className="px-4 pb-2 border-b border-neutral-200">
                   <h3 className="font-medium text-neutral-800">Notifiche</h3>
@@ -242,14 +234,13 @@ const Header = ({ setSidebarOpen }) => {
             >
               <SafeIcon icon={FiIcons.FiSearch} className="w-6 h-6 text-neutral-600" />
             </motion.button>
-
             <AnimatePresence>
               {showSearch && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  className="absolute right-0 top-12 w-96 bg-white rounded-xl shadow-strong border border-neutral-200 z-50"
+                  className="absolute right-0 top-12 w-96 bg-white rounded-xl shadow-strong border border-neutral-200 z-[100]"
                 >
                   <div className="p-4">
                     <Input
@@ -259,7 +250,6 @@ const Header = ({ setSidebarOpen }) => {
                       icon={FiIcons.FiSearch}
                     />
                   </div>
-
                   {searchResults.length > 0 && (
                     <div className="border-t border-neutral-200 max-h-64 overflow-y-auto">
                       {searchResults.map((result) => (
@@ -281,7 +271,6 @@ const Header = ({ setSidebarOpen }) => {
                       ))}
                     </div>
                   )}
-
                   {searchTerm.length > 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center">
                       <p className="text-sm text-neutral-500">Nessun risultato trovato</p>
@@ -321,14 +310,13 @@ const Header = ({ setSidebarOpen }) => {
               </div>
               <SafeIcon icon={FiIcons.FiChevronDown} className="w-4 h-4 text-neutral-500" />
             </motion.div>
-
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 top-12 w-64 bg-white rounded-xl shadow-strong border border-neutral-200 py-2 z-50"
+                  className="absolute right-0 top-12 w-64 bg-white rounded-xl shadow-strong border border-neutral-200 py-2 z-[100]"
                 >
                   <div className="px-4 py-3 border-b border-neutral-200">
                     <p className="font-medium text-neutral-800">{state.user.name}</p>

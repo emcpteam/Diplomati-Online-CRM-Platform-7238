@@ -81,6 +81,15 @@ export default {
         'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         'strong': '0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1)',
       },
+      zIndex: {
+        '60': '60',
+        '70': '70',
+        '80': '80',
+        '90': '90',
+        '95': '95',
+        '100': '100',
+        '9999': '9999',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
@@ -97,9 +106,9 @@ export default {
         },
         bounceSoft: {
           '0%, 20%, 53%, 80%, 100%': { transform: 'translate3d(0,0,0)' },
-          '40%, 43%': { transform: 'translate3d(0, -15px, 0)' },
-          '70%': { transform: 'translate3d(0, -8px, 0)' },
-          '90%': { transform: 'translate3d(0, -2px, 0)' },
+          '40%, 43%': { transform: 'translate3d(0,-15px,0)' },
+          '70%': { transform: 'translate3d(0,-8px,0)' },
+          '90%': { transform: 'translate3d(0,-2px,0)' },
         },
       },
     },

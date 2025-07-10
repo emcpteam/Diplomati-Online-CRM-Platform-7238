@@ -23,7 +23,10 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
 
   useEffect(() => {
     if (course) {
-      setFormData({ ...formData, ...course });
+      setFormData({
+        ...formData,
+        ...course
+      });
     }
   }, [course]);
 
@@ -90,7 +93,7 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -108,7 +111,6 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
             <Button variant="ghost" icon={FiIcons.FiX} onClick={onClose} />
           </div>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -125,7 +127,6 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
               required
             />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Anno Accademico"
@@ -139,7 +140,6 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
               onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
             />
           </div>
-
           {/* Subjects Management */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -172,7 +172,6 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
               <p className="text-sm text-neutral-500 mt-2">Nessuna materia aggiunta</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">Note</label>
             <textarea
@@ -182,7 +181,6 @@ const CourseModal = ({ course, onClose, mode = 'add' }) => {
               className="w-full h-24 px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
             />
           </div>
-
           <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
             <div className="flex items-center space-x-3">
               {mode === 'edit' && (
