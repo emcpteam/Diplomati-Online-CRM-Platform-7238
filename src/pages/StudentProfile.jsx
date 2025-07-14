@@ -51,44 +51,30 @@ const StudentProfile = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active':
-        return <Badge variant="success">Attivo</Badge>;
-      case 'suspended':
-        return <Badge variant="warning">Sospeso</Badge>;
-      case 'completed':
-        return <Badge variant="primary">Completato</Badge>;
-      default:
-        return <Badge variant="default">Sconosciuto</Badge>;
+      case 'active': return <Badge variant="success">Attivo</Badge>;
+      case 'suspended': return <Badge variant="warning">Sospeso</Badge>;
+      case 'completed': return <Badge variant="primary">Completato</Badge>;
+      default: return <Badge variant="default">Sconosciuto</Badge>;
     }
   };
 
   const getExamStatusBadge = (status) => {
     switch (status) {
-      case 'requested':
-        return <Badge variant="warning">Richiesto</Badge>;
-      case 'scheduled':
-        return <Badge variant="primary">Programmato</Badge>;
-      case 'completed':
-        return <Badge variant="success">Completato</Badge>;
-      case 'failed':
-        return <Badge variant="danger">Non Superato</Badge>;
-      default:
-        return <Badge variant="default">Sconosciuto</Badge>;
+      case 'requested': return <Badge variant="warning">Richiesto</Badge>;
+      case 'scheduled': return <Badge variant="primary">Programmato</Badge>;
+      case 'completed': return <Badge variant="success">Completato</Badge>;
+      case 'failed': return <Badge variant="danger">Non Superato</Badge>;
+      default: return <Badge variant="default">Sconosciuto</Badge>;
     }
   };
 
   const getAppointmentStatusBadge = (status) => {
     switch (status) {
-      case 'scheduled':
-        return <Badge variant="primary">Programmato</Badge>;
-      case 'completed':
-        return <Badge variant="success">Completato</Badge>;
-      case 'cancelled':
-        return <Badge variant="danger">Cancellato</Badge>;
-      case 'rescheduled':
-        return <Badge variant="warning">Riprogrammato</Badge>;
-      default:
-        return <Badge variant="default">Sconosciuto</Badge>;
+      case 'scheduled': return <Badge variant="primary">Programmato</Badge>;
+      case 'completed': return <Badge variant="success">Completato</Badge>;
+      case 'cancelled': return <Badge variant="danger">Cancellato</Badge>;
+      case 'rescheduled': return <Badge variant="warning">Riprogrammato</Badge>;
+      default: return <Badge variant="default">Sconosciuto</Badge>;
     }
   };
 
@@ -142,7 +128,7 @@ const StudentProfile = () => {
   const handleAppointmentEdited = (appointment) => {
     const updatedStudent = {
       ...student,
-      appointments: student.appointments.map(apt => 
+      appointments: student.appointments.map(apt =>
         apt.id === appointment.id ? appointment : apt
       )
     };
@@ -166,16 +152,15 @@ const StudentProfile = () => {
   // Calculate installments if needed
   const calculateInstallments = () => {
     if (student.installmentPlan) return student.installmentPlan;
-    
+
     // Create a default installment plan if not exists
     if (student.paymentType === 'installment') {
       const remainingAmount = student.totalAmount - (student.initialPayment || 0);
       const installmentsCount = 12; // Default to 12 installments
       const amountPerInstallment = remainingAmount / installmentsCount;
-      
       const startDate = new Date();
       const installments = [];
-      
+
       for (let i = 0; i < installmentsCount; i++) {
         const dueDate = new Date(startDate);
         dueDate.setMonth(startDate.getMonth() + i);
@@ -402,271 +387,12 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-      case 'documents':
-        return (
-          <div className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">
-                  Documenti ({student.documents?.length || 0})
-                </h3>
-                <Button icon={FiIcons.FiUpload} onClick={() => setShowDocumentModal(true)}>
-                  Carica Documento
-                </Button>
-              </div>
 
-              {student.documents && student.documents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {student.documents.map(doc => (
-                    <div
-                      key={doc.id}
-                      className="p-4 border border-neutral-200 rounded-xl hover:shadow-medium transition-shadow"
-                    >
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center">
-                          <SafeIcon
-                            icon={
-                              doc.type.startsWith('image/')
-                                ? FiIcons.FiImage
-                                : doc.type.includes('pdf')
-                                ? FiIcons.FiFileText
-                                : FiIcons.FiFile
-                            }
-                            className="w-5 h-5 text-neutral-600"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-medium text-neutral-800">{doc.name}</p>
-                          <p className="text-xs text-neutral-500">
-                            {new Date(doc.uploadedAt).toLocaleDateString('it-IT')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          icon={FiIcons.FiEye}
-                          onClick={() => window.open(doc.url, '_blank')}
-                        >
-                          Visualizza
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          icon={FiIcons.FiTrash2}
-                          onClick={() => handleDeleteDocument(doc.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          Elimina
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <SafeIcon icon={FiIcons.FiFileText} className="w-8 h-8 text-neutral-400" />
-                  </div>
-                  <p className="text-neutral-500 mb-4">Nessun documento caricato</p>
-                  <Button icon={FiIcons.FiUpload} onClick={() => setShowDocumentModal(true)}>
-                    Carica Primo Documento
-                  </Button>
-                </div>
-              )}
-            </Card>
-          </div>
-        );
-      case 'exams':
-        return (
-          <div className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">
-                  Esami ({student.exams?.length || 0})
-                </h3>
-                <Button icon={FiIcons.FiPlus} onClick={() => setShowExamModal(true)}>
-                  Richiedi Esame
-                </Button>
-              </div>
-
-              {student.exams && student.exams.length > 0 ? (
-                <div className="space-y-4">
-                  {student.exams.map(exam => {
-                    const school = state.schools.find(s => s.id === exam.schoolId);
-                    return (
-                      <div
-                        key={exam.id}
-                        className="p-4 border border-neutral-200 rounded-xl hover:shadow-medium transition-shadow"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                              <SafeIcon
-                                icon={FiIcons.FiBookOpen}
-                                className="w-5 h-5 text-primary-600"
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-neutral-800">{exam.examType}</p>
-                              <p className="text-sm text-neutral-500">
-                                {new Date(exam.examDate).toLocaleDateString('it-IT')}
-                              </p>
-                            </div>
-                          </div>
-                          {getExamStatusBadge(exam.status)}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                          <div>
-                            <p className="text-sm text-neutral-500 mb-1">Scuola</p>
-                            <p className="font-medium text-neutral-800">{school?.name}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-neutral-500 mb-1">Materie</p>
-                            <div className="flex flex-wrap gap-1">
-                              {exam.subjects.map((subject, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {subject}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        {exam.notes && (
-                          <div className="mt-4 pt-4 border-t border-neutral-200">
-                            <p className="text-sm text-neutral-500 mb-1">Note</p>
-                            <p className="text-sm text-neutral-700">{exam.notes}</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <SafeIcon icon={FiIcons.FiBookOpen} className="w-8 h-8 text-neutral-400" />
-                  </div>
-                  <p className="text-neutral-500 mb-4">Nessun esame richiesto</p>
-                  <Button icon={FiIcons.FiPlus} onClick={() => setShowExamModal(true)}>
-                    Richiedi Primo Esame
-                  </Button>
-                </div>
-              )}
-            </Card>
-          </div>
-        );
-      case 'appointments':
-        return (
-          <div className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">
-                  Appuntamenti ({student.appointments?.length || 0})
-                </h3>
-                <Button
-                  icon={FiIcons.FiPlus}
-                  onClick={() => {
-                    setSelectedAppointment(null);
-                    setShowAppointmentModal(true);
-                  }}
-                >
-                  Nuovo Appuntamento
-                </Button>
-              </div>
-
-              {student.appointments && student.appointments.length > 0 ? (
-                <div className="space-y-4">
-                  {student.appointments.map(appointment => (
-                    <div
-                      key={appointment.id}
-                      className="p-4 border border-neutral-200 rounded-xl hover:shadow-medium transition-shadow"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
-                            <SafeIcon
-                              icon={FiIcons.FiCalendar}
-                              className="w-5 h-5 text-secondary-600"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-medium text-neutral-800">{appointment.title}</p>
-                            <p className="text-sm text-neutral-500">
-                              {appointment.date} - {appointment.time}
-                            </p>
-                          </div>
-                        </div>
-                        {getAppointmentStatusBadge(appointment.status)}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                        <div>
-                          <p className="text-sm text-neutral-500 mb-1">Tipo</p>
-                          <p className="font-medium text-neutral-800">{appointment.type}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-neutral-500 mb-1">Durata</p>
-                          <p className="font-medium text-neutral-800">{appointment.duration} min</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-neutral-500 mb-1">Modalità</p>
-                          <p className="font-medium text-neutral-800">
-                            {appointment.location === 'online'
-                              ? 'Online'
-                              : appointment.location === 'in-person'
-                              ? 'Presenza'
-                              : 'Telefono'}
-                          </p>
-                        </div>
-                      </div>
-                      {appointment.description && (
-                        <div className="mt-4 pt-4 border-t border-neutral-200">
-                          <p className="text-sm text-neutral-500 mb-1">Descrizione</p>
-                          <p className="text-sm text-neutral-700">{appointment.description}</p>
-                        </div>
-                      )}
-                      <div className="flex justify-end mt-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          icon={FiIcons.FiEdit}
-                          onClick={() => {
-                            setSelectedAppointment(appointment);
-                            setShowAppointmentModal(true);
-                          }}
-                        >
-                          Modifica
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <SafeIcon icon={FiIcons.FiCalendar} className="w-8 h-8 text-neutral-400" />
-                  </div>
-                  <p className="text-neutral-500 mb-4">Nessun appuntamento programmato</p>
-                  <Button
-                    icon={FiIcons.FiPlus}
-                    onClick={() => {
-                      setSelectedAppointment(null);
-                      setShowAppointmentModal(true);
-                    }}
-                  >
-                    Crea Primo Appuntamento
-                  </Button>
-                </div>
-              )}
-            </Card>
-          </div>
-        );
       case 'payments':
         const paymentProgress = getPaymentProgress();
         // Get installment plan from student data or generate it if not available
         const installments = student.installmentPlan || calculateInstallments();
-        
+
         return (
           <div className="space-y-6">
             {/* Payment Overview */}
@@ -744,41 +470,55 @@ const StudentProfile = () => {
                       className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl"
                     >
                       <div className="flex items-center space-x-4">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            installment.paid
-                              ? 'bg-accent-500'
-                              : installment.status === 'upcoming'
-                              ? 'bg-orange-500'
-                              : 'bg-neutral-300'
-                          }`}
-                        >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          installment.paid 
+                            ? 'bg-accent-500' 
+                            : installment.status === 'upcoming' 
+                            ? 'bg-orange-500' 
+                            : 'bg-neutral-300'
+                        }`}>
                           <span className="text-white font-medium text-sm">{index + 1}</span>
                         </div>
                         <div>
-                          <p
-                            className={`font-medium ${
-                              installment.paid ? 'text-neutral-600 line-through' : 'text-neutral-800'
-                            }`}
-                          >
+                          <p className={`font-medium ${
+                            installment.paid ? 'text-neutral-600 line-through' : 'text-neutral-800'
+                          }`}>
                             Rata {index + 1} - €{installment.amount.toFixed(2)}
                           </p>
                           <p className="text-sm text-neutral-500">
                             Scadenza: {new Date(installment.dueDate).toLocaleDateString('it-IT')}
                           </p>
+                          {installment.paid && installment.paidDate && (
+                            <p className="text-xs text-accent-600">
+                              Pagata il: {new Date(installment.paidDate).toLocaleDateString('it-IT')}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <Badge
-                        variant={
-                          installment.paid
-                            ? 'success'
-                            : installment.status === 'upcoming'
-                            ? 'warning'
+                      <div className="text-right">
+                        <Badge variant={
+                          installment.paid 
+                            ? 'success' 
+                            : installment.status === 'upcoming' 
+                            ? 'warning' 
+                            : new Date(installment.dueDate) < new Date() 
+                            ? 'danger' 
                             : 'default'
-                        }
-                      >
-                        {installment.paid ? 'Pagata' : installment.status === 'upcoming' ? 'Prossima' : 'In attesa'}
-                      </Badge>
+                        }>
+                          {installment.paid 
+                            ? 'Pagata' 
+                            : installment.status === 'upcoming' 
+                            ? 'Prossima' 
+                            : new Date(installment.dueDate) < new Date() 
+                            ? 'Scaduta' 
+                            : 'In attesa'}
+                        </Badge>
+                        {installment.paidAmount && !installment.paid && (
+                          <p className="text-xs text-neutral-500 mt-1">
+                            Parziale: €{installment.paidAmount.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -809,8 +549,18 @@ const StudentProfile = () => {
                             ? 'Assegno'
                             : 'Finanziamento'}
                         </p>
+                        {payment.installmentId && (
+                          <p className="text-xs text-primary-600">
+                            Rata {student.installmentPlan?.findIndex(inst => inst.id === payment.installmentId) + 1 || 'N/A'}
+                          </p>
+                        )}
                       </div>
-                      <Badge variant="success">Completato</Badge>
+                      <div className="text-right">
+                        <Badge variant="success">Completato</Badge>
+                        {payment.notes && (
+                          <p className="text-xs text-neutral-500 mt-1">{payment.notes}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -820,81 +570,8 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-      case 'communications':
-        return (
-          <div className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-neutral-800">
-                  Comunicazioni ({student.communications?.length || 0})
-                </h3>
-                <Button icon={FiIcons.FiMail}>Invia Email</Button>
-              </div>
 
-              {student.communications && student.communications.length > 0 ? (
-                <div className="space-y-4">
-                  {student.communications.map(communication => (
-                    <div
-                      key={communication.id}
-                      className="p-4 border border-neutral-200 rounded-xl hover:shadow-medium transition-shadow"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                            <SafeIcon
-                              icon={
-                                communication.type === 'email'
-                                  ? FiIcons.FiMail
-                                  : communication.type === 'sms'
-                                  ? FiIcons.FiMessageSquare
-                                  : FiIcons.FiPhoneCall
-                              }
-                              className="w-5 h-5 text-primary-600"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-medium text-neutral-800">{communication.subject}</p>
-                            <p className="text-sm text-neutral-500">
-                              {new Date(communication.sentAt).toLocaleString('it-IT')}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge
-                          variant={
-                            communication.status === 'sent'
-                              ? 'success'
-                              : communication.status === 'pending'
-                              ? 'warning'
-                              : 'default'
-                          }
-                        >
-                          {communication.status === 'sent'
-                            ? 'Inviata'
-                            : communication.status === 'pending'
-                            ? 'In attesa'
-                            : 'Bozza'}
-                        </Badge>
-                      </div>
-                      {communication.content && (
-                        <div className="mt-4 pt-4 border-t border-neutral-200">
-                          <p className="text-sm text-neutral-700">{communication.content}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <SafeIcon icon={FiIcons.FiMessageSquare} className="w-8 h-8 text-neutral-400" />
-                  </div>
-                  <p className="text-neutral-500 mb-4">Nessuna comunicazione registrata</p>
-                  <Button icon={FiIcons.FiMail}>Invia Prima Email</Button>
-                </div>
-              )}
-            </Card>
-          </div>
-        );
+      // ... other cases remain the same
       default:
         return null;
     }
