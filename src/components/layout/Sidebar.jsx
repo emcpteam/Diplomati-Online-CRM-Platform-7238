@@ -7,7 +7,7 @@ import SafeIcon from '../../common/SafeIcon';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
-  
+
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: FiIcons.FiHome },
     { name: 'Studenti', path: '/students', icon: FiIcons.FiUsers },
@@ -32,7 +32,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] lg:hidden"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -42,14 +42,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         initial={false}
         animate={{ x: sidebarOpen ? 0 : '-100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={`fixed left-0 top-0 h-full w-80 bg-white/95 backdrop-blur-md shadow-strong z-[95] lg:relative lg:translate-x-0 lg:z-auto ${
+        className={`fixed left-0 top-0 h-full w-80 bg-white/95 backdrop-blur-md shadow-strong z-50 lg:relative lg:translate-x-0 lg:z-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center px-6 py-8 border-b border-neutral-200/50">
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-3"
+            >
               <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center shadow-medium">
                 <SafeIcon icon={LuIcons.LuGraduationCap} className="w-6 h-6 text-white" />
               </div>

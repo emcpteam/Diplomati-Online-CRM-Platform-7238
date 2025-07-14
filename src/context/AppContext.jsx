@@ -114,10 +114,10 @@ function appReducer(state, action) {
     case 'SET_USER':
       return { ...state, user: action.payload, isAuthenticated: true };
     case 'CHECK_AUTH':
-      return { 
-        ...state, 
-        isAuthenticated: action.payload.isAuthenticated, 
-        user: action.payload.user 
+      return {
+        ...state,
+        isAuthenticated: action.payload.isAuthenticated,
+        user: action.payload.user
       };
 
     // User Actions
@@ -516,29 +516,19 @@ export const AppProvider = ({ children }) => {
 
     // Only dispatch if arrays are empty (to avoid duplicates)
     if (state.students.length === 0) {
-      sampleStudents.forEach(student => 
-        dispatch({ type: 'ADD_STUDENT', payload: student })
-      );
+      sampleStudents.forEach(student => dispatch({ type: 'ADD_STUDENT', payload: student }));
     }
     if (state.schools.length === 0) {
-      sampleSchools.forEach(school => 
-        dispatch({ type: 'ADD_SCHOOL', payload: school })
-      );
+      sampleSchools.forEach(school => dispatch({ type: 'ADD_SCHOOL', payload: school }));
     }
     if (state.courses.length === 0) {
-      sampleCourses.forEach(course => 
-        dispatch({ type: 'ADD_COURSE', payload: course })
-      );
+      sampleCourses.forEach(course => dispatch({ type: 'ADD_COURSE', payload: course }));
     }
     if (state.leads.length === 0) {
-      sampleLeads.forEach(lead => 
-        dispatch({ type: 'ADD_LEAD', payload: lead })
-      );
+      sampleLeads.forEach(lead => dispatch({ type: 'ADD_LEAD', payload: lead }));
     }
     if (state.tasks.length === 0) {
-      sampleTasks.forEach(task => 
-        dispatch({ type: 'ADD_TASK', payload: task })
-      );
+      sampleTasks.forEach(task => dispatch({ type: 'ADD_TASK', payload: task }));
     }
   };
 

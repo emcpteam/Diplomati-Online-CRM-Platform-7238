@@ -24,10 +24,7 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
 
   useEffect(() => {
     if (school) {
-      setFormData({
-        ...formData,
-        ...school
-      });
+      setFormData({ ...formData, ...school });
     }
   }, [school]);
 
@@ -75,7 +72,7 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -93,6 +90,7 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
             <Button variant="ghost" icon={FiIcons.FiX} onClick={onClose} />
           </div>
         </div>
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <Input
             label="Nome Scuola *"
@@ -100,12 +98,14 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
+
           <Input
             label="Indirizzo Completo *"
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             required
           />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Telefono *"
@@ -121,11 +121,13 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
               required
             />
           </div>
+
           <Input
             label="Persona di Contatto"
             value={formData.contact}
             onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
           />
+
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">Note</label>
             <textarea
@@ -135,6 +137,7 @@ const SchoolModal = ({ school, onClose, mode = 'add' }) => {
               className="w-full h-24 px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
             />
           </div>
+
           <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
             <div className="flex items-center space-x-3">
               {mode === 'edit' && (

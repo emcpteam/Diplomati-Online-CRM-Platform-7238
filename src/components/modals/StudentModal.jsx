@@ -62,7 +62,6 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
     try {
       // Validate installment fields if payment type is installment
       if (formData.paymentType === 'installment') {
@@ -76,25 +75,24 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
           setLoading(false);
           return;
         }
-        
+
         // Validate that initialPayment is less than totalAmount
         if (parseFloat(formData.initialPayment) >= parseFloat(formData.totalAmount)) {
           toast.error('L\'acconto iniziale deve essere inferiore all\'importo totale');
           setLoading(false);
           return;
         }
-        
+
         // Validate that installment dates are valid
         const startDate = new Date(formData.installmentStartDate);
         const endDate = new Date(formData.installmentEndDate);
-        
         if (startDate >= endDate) {
           toast.error('La data di fine rate deve essere successiva alla data di inizio');
           setLoading(false);
           return;
         }
       }
-      
+
       if (mode === 'add') {
         const newStudent = {
           ...formData,
@@ -115,12 +113,10 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
         const updatedStudent = {
           ...formData,
           // Only regenerate installment plan if changing to installment or modifying installment details
-          installmentPlan: formData.paymentType === 'installment' 
-            ? generateInstallmentPlan(formData) 
-            : formData.installmentPlan || [],
+          installmentPlan: formData.paymentType === 'installment' ? generateInstallmentPlan(formData) : formData.installmentPlan || [],
           // If switching to installment type, set paid amount to initial payment
-          paidAmount: formData.paymentType === 'installment' && student.paymentType !== 'installment'
-            ? parseFloat(formData.initialPayment) || 0
+          paidAmount: formData.paymentType === 'installment' && student.paymentType !== 'installment' 
+            ? parseFloat(formData.initialPayment) || 0 
             : student.paidAmount
         };
         dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
@@ -140,10 +136,9 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
     const installmentPlan = [];
     const startDate = new Date(data.installmentStartDate);
     const endDate = new Date(data.installmentEndDate);
-    
+
     // Calculate number of months between start and end dates
-    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-      (endDate.getMonth() - startDate.getMonth()) + 1; // +1 to include end month
+    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1; // +1 to include end month
     
     // Use specified installments count if it's less than or equal to the months difference
     const installmentsCount = Math.min(parseInt(data.installmentsCount) || 12, monthsDiff);
@@ -189,7 +184,7 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -337,7 +332,7 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
           {/* Installment Payment Fields - Only show when payment type is 'installment' */}
           <AnimatePresence>
             {formData.paymentType === 'installment' && (
-              <motion.div
+              <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -369,7 +364,7 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Mese e anno di inizio *
                     </label>
-                    <input 
+                    <input
                       type="month"
                       className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.installmentStartDate}
@@ -381,7 +376,7 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Mese e anno di fine *
                     </label>
-                    <input 
+                    <input
                       type="month"
                       className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.installmentEndDate}
@@ -415,8 +410,7 @@ const StudentModal = ({ student, onClose, mode = 'add' }) => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">Importo per Rata:</span>
                         <span className="font-medium">
-                          €{((parseFloat(formData.totalAmount) - parseFloat(formData.initialPayment || 0)) / 
-                            parseInt(formData.installmentsCount || 1)).toFixed(2)}
+                          €{((parseFloat(formData.totalAmount) - parseFloat(formData.initialPayment || 0)) / parseInt(formData.installmentsCount || 1)).toFixed(2)}
                         </span>
                       </div>
                     </div>

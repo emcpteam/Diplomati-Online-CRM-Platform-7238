@@ -29,7 +29,3 @@ export { default as Login } from './Login';
 
 // Invoicing
 export { default as ElectronicInvoicing } from './ElectronicInvoicing';
-
-// Quest Authentication
-export { default as QuestLogin } from './QuestLogin';
-export { default as QuestOnboarding } from './QuestOnboarding';
