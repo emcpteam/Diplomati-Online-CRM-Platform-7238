@@ -1,51 +1,76 @@
-// ... previous imports stay the same
+```javascript
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import * as FiIcons from 'react-icons/fi';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import { useApp } from '../../context/AppContext';
+import { generatePaymentReceipt } from '../../utils/pdfGenerator';
+import toast from 'react-hot-toast';
+import SafeIcon from '../../common/SafeIcon';
 
 const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
-  // ... previous state and constants remain the same
+  const { dispatch } = useApp();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    amount: '',
+    method: 'bank_transfer',
+    date: new Date().toISOString().split('T')[0],
+    notes: '',
+    discount: 0,
+    installmentId: ''
+  });
 
-  const recalculateRemainingInstallments = (installmentPlan, currentInstallmentId, paidAmount) => {
-    // Find the current installment and all future unpaid installments
-    const currentIndex = installmentPlan.findIndex(inst => inst.id.toString() === currentInstallmentId);
-    const remainingInstallments = installmentPlan.slice(currentIndex + 1).filter(inst => !inst.paid);
+  // Calculate max payment possible
+  const maxPayment = student.totalAmount - student.paidAmount;
+
+  // Get installment options if applicable
+  const installmentOptions = student.installmentPlan 
+    ? student.installmentPlan.filter(installment => !installment.paid)
+    : [];
+
+  // Function to recalculate installments after a payment
+  const recalculateInstallments = (totalPaid, installmentPlan) => {
+    // Calculate remaining total amount after the payment
+    const totalAmount = student.totalAmount;
+    const initialPayment = student.initialPayment || 0;
+    const remainingTotal = totalAmount - initialPayment - totalPaid;
     
-    // Calculate remaining total amount for all future installments
-    const originalInstallment = installmentPlan[currentIndex];
-    const remainingFromCurrent = originalInstallment.amount - paidAmount;
-    const totalRemainingAmount = remainingFromCurrent + 
-      remainingInstallments.reduce((sum, inst) => sum + inst.amount, 0);
-    
+    // Get number of remaining installments (unpaid ones)
+    const remainingInstallments = installmentPlan.filter(inst => !inst.paid);
+    const remainingCount = remainingInstallments.length;
+
+    if (remainingCount === 0) return installmentPlan;
+
     // Calculate new amount per remaining installment
-    const newAmountPerInstallment = totalRemainingAmount / (remainingInstallments.length + 1);
+    const newInstallmentAmount = remainingTotal / remainingCount;
 
-    // Update the installment plan
-    return installmentPlan.map((installment, index) => {
-      if (index === currentIndex) {
-        // Current installment gets marked as partially paid
+    // Update installment plan
+    return installmentPlan.map(installment => {
+      if (installment.paid) {
+        // Keep paid installments unchanged
+        return installment;
+      } else {
+        // Update unpaid installments with new amount
         return {
           ...installment,
-          paidAmount: paidAmount,
-          amount: originalInstallment.amount,
-          paid: paidAmount >= originalInstallment.amount,
-          status: paidAmount >= originalInstallment.amount ? 'paid' : 'partial',
-          lastPaymentDate: new Date().toISOString()
-        };
-      } else if (index > currentIndex && !installment.paid) {
-        // Future unpaid installments get recalculated
-        return {
-          ...installment,
-          amount: newAmountPerInstallment,
-          paidAmount: 0,
+          amount: newInstallmentAmount,
           status: 'pending'
         };
       }
-      // Keep past installments unchanged
-      return installment;
     });
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       toast.error('Inserisci un importo valido');
       return;
@@ -57,10 +82,11 @@ const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
     }
 
     setLoading(true);
-    
+
     try {
       const paymentAmount = parseFloat(formData.amount);
-      
+      const newPaidAmount = student.paidAmount + paymentAmount;
+
       const payment = {
         id: Date.now(),
         studentId: student.id,
@@ -74,96 +100,42 @@ const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
         createdAt: new Date().toISOString()
       };
 
-      // Add payment
-      dispatch({ type: 'ADD_PAYMENT', payload: payment });
-
-      // Update student payment amount
-      const newPaidAmount = student.paidAmount + paymentAmount;
-      
       // Update installment plan if this is an installment payment
       let updatedInstallmentPlan = student.installmentPlan ? [...student.installmentPlan] : [];
-      
+
       if (student.paymentType === 'installment' && student.installmentPlan) {
         if (formData.installmentId) {
-          // Get the selected installment
+          // Payment for specific installment
           const selectedInstallment = student.installmentPlan.find(
             inst => inst.id.toString() === formData.installmentId
           );
 
-          if (paymentAmount < selectedInstallment.amount) {
-            // Partial payment - recalculate remaining installments
-            updatedInstallmentPlan = recalculateRemainingInstallments(
-              student.installmentPlan,
-              formData.installmentId,
-              paymentAmount
-            );
-
-            // Add note about recalculation
-            payment.notes = `${payment.notes || ''} [Pagamento parziale - Rate ricalcolate]`.trim();
-          } else {
-            // Full payment or overpayment
-            updatedInstallmentPlan = student.installmentPlan.map(installment => {
-              if (installment.id.toString() === formData.installmentId) {
-                return {
-                  ...installment,
-                  paid: true,
-                  paidAmount: paymentAmount,
-                  paidDate: formData.date,
-                  paymentId: payment.id,
-                  status: 'paid'
-                };
-              }
-              return installment;
-            });
-          }
-        } else {
-          // Auto-assign payment to next pending installment(s)
-          let remainingPayment = paymentAmount;
-          let lastPaidInstallmentIndex = -1;
-          
-          updatedInstallmentPlan = student.installmentPlan.map((installment, index) => {
-            if (!installment.paid && remainingPayment > 0) {
-              const currentPayment = Math.min(remainingPayment, installment.amount);
-              remainingPayment -= currentPayment;
-              lastPaidInstallmentIndex = index;
-              
+          // Update the selected installment
+          updatedInstallmentPlan = updatedInstallmentPlan.map(installment => {
+            if (installment.id.toString() === formData.installmentId) {
               return {
                 ...installment,
-                paidAmount: currentPayment,
-                paid: currentPayment >= installment.amount,
+                paid: paymentAmount >= installment.amount,
+                paidAmount: paymentAmount,
                 paidDate: formData.date,
                 paymentId: payment.id,
-                status: currentPayment >= installment.amount ? 'paid' : 'partial'
+                status: paymentAmount >= installment.amount ? 'paid' : 'partial'
               };
             }
             return installment;
           });
 
-          // If there's still remaining payment and partial payments were made
-          if (remainingPayment > 0 && lastPaidInstallmentIndex >= 0) {
-            // Recalculate remaining installments
-            const futureInstallments = updatedInstallmentPlan.slice(lastPaidInstallmentIndex + 1);
-            const totalRemaining = futureInstallments.reduce((sum, inst) => sum + inst.amount, 0);
-            
-            if (totalRemaining > 0) {
-              const newAmountPerInstallment = totalRemaining / futureInstallments.length;
-              
-              updatedInstallmentPlan = updatedInstallmentPlan.map((installment, index) => {
-                if (index > lastPaidInstallmentIndex) {
-                  return {
-                    ...installment,
-                    amount: newAmountPerInstallment,
-                    paidAmount: 0,
-                    status: 'pending'
-                  };
-                }
-                return installment;
-              });
-            }
-          }
+          // Recalculate remaining installments
+          updatedInstallmentPlan = recalculateInstallments(newPaidAmount, updatedInstallmentPlan);
+          payment.notes = `${payment.notes || ''} [Pagamento rata - Rate ricalcolate]`.trim();
+        } else {
+          // Generic payment - distribute and recalculate
+          updatedInstallmentPlan = recalculateInstallments(newPaidAmount, updatedInstallmentPlan);
+          payment.notes = `${payment.notes || ''} [Pagamento generico - Rate ricalcolate]`.trim();
         }
       }
 
+      // Update student record
       const updatedStudent = {
         ...student,
         paidAmount: newPaidAmount,
@@ -172,17 +144,19 @@ const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
         installmentPlan: updatedInstallmentPlan
       };
 
+      // Add payment and update student
+      dispatch({ type: 'ADD_PAYMENT', payload: payment });
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
 
       // Generate receipt
       generatePaymentReceipt(updatedStudent, payment);
-      
+
       toast.success('Pagamento registrato con successo!');
-      
+
       if (onPaymentAdded) {
         onPaymentAdded(payment, updatedStudent);
       }
-      
+
       onClose();
     } catch (error) {
       console.error('Payment error:', error);
@@ -192,7 +166,154 @@ const PaymentModal = ({ student, onClose, onPaymentAdded }) => {
     }
   };
 
-  // ... rest of the component remains the same
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }} 
+        exit={{ scale: 0.9, opacity: 0 }} 
+        className="bg-white rounded-2xl shadow-strong max-w-2xl w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-neutral-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-neutral-800">
+              Registra Pagamento
+            </h2>
+            <Button variant="ghost" icon={FiIcons.FiX} onClick={onClose} />
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input 
+              label="Importo (€) *" 
+              type="number" 
+              step="0.01" 
+              min="0" 
+              max={maxPayment} 
+              value={formData.amount} 
+              onChange={(e) => handleInputChange('amount', e.target.value)}
+              required 
+            />
+            
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Metodo di Pagamento
+              </label>
+              <select
+                value={formData.method}
+                onChange={(e) => handleInputChange('method', e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="bank_transfer">Bonifico</option>
+                <option value="card">Carta di Credito</option>
+                <option value="cash">Contanti</option>
+                <option value="check">Assegno</option>
+                <option value="financing">Finanziamento</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input 
+              label="Data Pagamento" 
+              type="date" 
+              value={formData.date} 
+              onChange={(e) => handleInputChange('date', e.target.value)}
+            />
+            
+            <Input 
+              label="Sconto (€)" 
+              type="number" 
+              min="0" 
+              step="0.01" 
+              value={formData.discount} 
+              onChange={(e) => handleInputChange('discount', e.target.value)}
+            />
+          </div>
+
+          {student.paymentType === 'installment' && installmentOptions.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Rata Specifica (opzionale)
+              </label>
+              <select
+                value={formData.installmentId}
+                onChange={(e) => handleInputChange('installmentId', e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">Pagamento generico</option>
+                {installmentOptions.map((installment, index) => (
+                  <option key={installment.id} value={installment.id}>
+                    Rata {index + 1} - €{installment.amount.toFixed(2)} - 
+                    Scadenza: {new Date(installment.dueDate).toLocaleDateString('it-IT')}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Note
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              placeholder="Note aggiuntive sul pagamento..."
+              className="w-full h-24 px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            />
+          </div>
+
+          {/* Payment Summary */}
+          <div className="p-4 bg-neutral-50 rounded-xl">
+            <h3 className="font-medium text-neutral-800 mb-2">Riepilogo</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Importo Totale:</span>
+                <span className="font-medium">€{student.totalAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Già Pagato:</span>
+                <span className="font-medium">€{student.paidAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Da Pagare:</span>
+                <span className="font-medium">€{maxPayment.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Pagamento Attuale:</span>
+                <span className="font-medium text-accent-600">
+                  €{parseFloat(formData.amount || 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
+            <Button variant="outline" type="button" onClick={onClose}>
+              Annulla
+            </Button>
+            <Button 
+              type="submit" 
+              icon={FiIcons.FiDollarSign} 
+              loading={loading}
+            >
+              Registra Pagamento
+            </Button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
 };
 
 export default PaymentModal;
+```
