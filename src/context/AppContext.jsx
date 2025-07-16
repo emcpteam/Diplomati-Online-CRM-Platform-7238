@@ -1,3 +1,4 @@
+// Update AppContext.jsx to ensure SMTP settings are properly initialized
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const AppContext = createContext();
@@ -98,7 +99,9 @@ const initialState = {
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
-        username: 'noreply@diplomatonline.it'
+        username: 'noreply@diplomatonline.it',
+        password: '',
+        fromName: 'Diplomati Online'
       }
     }
   }
@@ -114,11 +117,7 @@ function appReducer(state, action) {
     case 'SET_USER':
       return { ...state, user: action.payload, isAuthenticated: true };
     case 'CHECK_AUTH':
-      return {
-        ...state,
-        isAuthenticated: action.payload.isAuthenticated,
-        user: action.payload.user
-      };
+      return { ...state, isAuthenticated: action.payload.isAuthenticated, user: action.payload.user };
 
     // User Actions
     case 'ADD_USER':
@@ -126,7 +125,7 @@ function appReducer(state, action) {
     case 'UPDATE_USER':
       return {
         ...state,
-        users: state.users.map(user =>
+        users: state.users.map(user => 
           user.id === action.payload.id ? { ...user, ...action.payload } : user
         )
       };
@@ -161,7 +160,7 @@ function appReducer(state, action) {
     case 'UPDATE_STUDENT':
       return {
         ...state,
-        students: state.students.map(student =>
+        students: state.students.map(student => 
           student.id === action.payload.id ? { ...student, ...action.payload } : student
         )
       };
@@ -174,7 +173,7 @@ function appReducer(state, action) {
     case 'UPDATE_SCHOOL':
       return {
         ...state,
-        schools: state.schools.map(school =>
+        schools: state.schools.map(school => 
           school.id === action.payload.id ? { ...school, ...action.payload } : school
         )
       };
@@ -187,7 +186,7 @@ function appReducer(state, action) {
     case 'UPDATE_COURSE':
       return {
         ...state,
-        courses: state.courses.map(course =>
+        courses: state.courses.map(course => 
           course.id === action.payload.id ? { ...course, ...action.payload } : course
         )
       };
@@ -200,7 +199,7 @@ function appReducer(state, action) {
     case 'UPDATE_LEAD':
       return {
         ...state,
-        leads: state.leads.map(lead =>
+        leads: state.leads.map(lead => 
           lead.id === action.payload.id ? { ...lead, ...action.payload } : lead
         )
       };
@@ -213,7 +212,7 @@ function appReducer(state, action) {
     case 'UPDATE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(task =>
+        tasks: state.tasks.map(task => 
           task.id === action.payload.id ? { ...task, ...action.payload } : task
         )
       };
@@ -226,7 +225,7 @@ function appReducer(state, action) {
     case 'UPDATE_QUOTE':
       return {
         ...state,
-        quotes: state.quotes.map(quote =>
+        quotes: state.quotes.map(quote => 
           quote.id === action.payload.id ? { ...quote, ...action.payload } : quote
         )
       };
@@ -239,7 +238,7 @@ function appReducer(state, action) {
     case 'UPDATE_PAYMENT':
       return {
         ...state,
-        payments: state.payments.map(payment =>
+        payments: state.payments.map(payment => 
           payment.id === action.payload.id ? { ...payment, ...action.payload } : payment
         )
       };
@@ -250,7 +249,7 @@ function appReducer(state, action) {
     case 'UPDATE_INVOICE':
       return {
         ...state,
-        invoices: state.invoices.map(invoice =>
+        invoices: state.invoices.map(invoice => 
           invoice.id === action.payload.id ? { ...invoice, ...action.payload } : invoice
         )
       };
@@ -269,7 +268,7 @@ function appReducer(state, action) {
     case 'UPDATE_APPOINTMENT':
       return {
         ...state,
-        appointments: state.appointments.map(apt =>
+        appointments: state.appointments.map(apt => 
           apt.id === action.payload.id ? { ...apt, ...action.payload } : apt
         )
       };
@@ -516,19 +515,33 @@ export const AppProvider = ({ children }) => {
 
     // Only dispatch if arrays are empty (to avoid duplicates)
     if (state.students.length === 0) {
-      sampleStudents.forEach(student => dispatch({ type: 'ADD_STUDENT', payload: student }));
+      sampleStudents.forEach(student => 
+        dispatch({ type: 'ADD_STUDENT', payload: student })
+      );
     }
+
     if (state.schools.length === 0) {
-      sampleSchools.forEach(school => dispatch({ type: 'ADD_SCHOOL', payload: school }));
+      sampleSchools.forEach(school => 
+        dispatch({ type: 'ADD_SCHOOL', payload: school })
+      );
     }
+
     if (state.courses.length === 0) {
-      sampleCourses.forEach(course => dispatch({ type: 'ADD_COURSE', payload: course }));
+      sampleCourses.forEach(course => 
+        dispatch({ type: 'ADD_COURSE', payload: course })
+      );
     }
+
     if (state.leads.length === 0) {
-      sampleLeads.forEach(lead => dispatch({ type: 'ADD_LEAD', payload: lead }));
+      sampleLeads.forEach(lead => 
+        dispatch({ type: 'ADD_LEAD', payload: lead })
+      );
     }
+
     if (state.tasks.length === 0) {
-      sampleTasks.forEach(task => dispatch({ type: 'ADD_TASK', payload: task }));
+      sampleTasks.forEach(task => 
+        dispatch({ type: 'ADD_TASK', payload: task })
+      );
     }
   };
 
