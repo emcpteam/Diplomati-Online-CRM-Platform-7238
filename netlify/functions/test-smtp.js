@@ -10,10 +10,43 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { host, port, secure, username, password } = JSON.parse(event.body);
+    const { host, port, secure, username, password, fromName, fromEmail } = JSON.parse(event.body);
+    
+    // Special handling for SendGrid API
+    if (host.includes('sendgrid') && username === 'apikey') {
+      try {
+        // For SendGrid, we'll make a simple API call to verify the API key
+        const response = await fetch('https://api.sendgrid.com/v3/scopes', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${password}`
+          }
+        });
+        
+        if (response.ok) {
+          return {
+            statusCode: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+              success: true,
+              message: 'SendGrid API key validated successfully'
+            })
+          };
+        } else {
+          const errorData = await response.json();
+          throw new Error(`SendGrid API error: ${errorData.errors?.[0]?.message || 'Invalid API key'}`);
+        }
+      } catch (sendgridError) {
+        console.error('SendGrid API validation error:', sendgridError);
+        throw new Error(`Error validating SendGrid API key: ${sendgridError.message}`);
+      }
+    }
 
-    // Create transporter
-    const transporter = nodemailer.createTransporter({
+    // Create transporter for regular SMTP
+    const transporter = nodemailer.createTransport({
       host: host,
       port: parseInt(port),
       secure: secure,
@@ -37,10 +70,8 @@ exports.handler = async (event, context) => {
         message: 'SMTP connection successful'
       })
     };
-
   } catch (error) {
     console.error('SMTP test error:', error);
-
     return {
       statusCode: 500,
       headers: {

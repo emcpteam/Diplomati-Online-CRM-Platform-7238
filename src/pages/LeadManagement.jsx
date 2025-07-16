@@ -20,7 +20,6 @@ const LeadManagement = () => {
 
   const handleSendEmail = async (lead, template) => {
     const toastId = toast.loading('Invio email in corso...');
-    
     try {
       // Get the template data
       const emailData = emailTemplates[template](lead);
@@ -68,13 +67,10 @@ const LeadManagement = () => {
 
   // Filter leads based on search term and status filter
   const filteredLeads = state.leads ? state.leads.filter(lead => {
-    const matchesSearch = 
-      lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      lead.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         lead.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || lead.status === filterStatus;
-    
     return matchesSearch && matchesStatus;
   }) : [];
 
@@ -91,8 +87,8 @@ const LeadManagement = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             icon={FiIcons.FiDownload}
             onClick={() => toast.success('Export completato!')}
           >
@@ -108,11 +104,11 @@ const LeadManagement = () => {
       <Card className="p-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <Input
-              placeholder="Cerca lead..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              icon={FiIcons.FiSearch}
+            <Input 
+              placeholder="Cerca lead..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              icon={FiIcons.FiSearch} 
             />
           </div>
           <select
@@ -159,32 +155,29 @@ const LeadManagement = () => {
                       lead.status === 'new' ? 'primary' :
                       lead.status === 'contacted' ? 'secondary' :
                       lead.status === 'qualified' ? 'success' :
-                      lead.status === 'converted' ? 'accent' : 'warning'
+                      lead.status === 'converted' ? 'accent' :
+                      'warning'
                     }
                   >
                     {lead.status === 'new' ? 'Nuovo' :
                      lead.status === 'contacted' ? 'Contattato' :
                      lead.status === 'qualified' ? 'Qualificato' :
-                     lead.status === 'converted' ? 'Convertito' : 'Perso'}
+                     lead.status === 'converted' ? 'Convertito' :
+                     'Perso'}
                   </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
                     icon={FiIcons.FiMail}
                     onClick={() => handleSendEmail(lead, 'welcome')}
                   >
                     Email
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    icon={FiIcons.FiEye}
-                  >
+                  <Button variant="ghost" size="sm" icon={FiIcons.FiEye}>
                     Dettagli
                   </Button>
                 </div>
               </div>
-              
               <div className="mt-4 pt-4 border-t border-neutral-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>

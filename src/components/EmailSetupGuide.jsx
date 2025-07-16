@@ -19,18 +19,18 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
       description: 'Soluzione serverless per Netlify (consigliata)'
     },
     {
+      id: 'supabase',
+      name: 'Supabase Edge Functions',
+      icon: FiIcons.FiDatabase,
+      difficulty: 'Medio',
+      description: 'Usa Supabase per le funzioni backend'
+    },
+    {
       id: 'emailjs',
       name: 'EmailJS',
       icon: FiIcons.FiMail,
       difficulty: 'Molto Facile',
       description: 'Servizio email client-side'
-    },
-    {
-      id: 'formspree',
-      name: 'Formspree',
-      icon: FiIcons.FiSend,
-      difficulty: 'Facile',
-      description: 'Servizio form e email'
     },
     {
       id: 'backend',
@@ -55,7 +55,6 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
 
             <div className="space-y-4">
               <h4 className="font-semibold text-neutral-800">Passaggi per l'attivazione:</h4>
-              
               <div className="space-y-3">
                 <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
                   <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
@@ -90,6 +89,56 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
                 </div>
               </div>
             </div>
+
+            <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+              <h4 className="font-semibold text-yellow-800 mb-2">📋 Checklist Finale:</h4>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                <li>✅ Deploy fatto su Netlify</li>
+                <li>✅ SMTP configurato nelle Integrazioni</li>
+                <li>✅ Test di invio email completato</li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 'supabase':
+        return (
+          <div className="space-y-6">
+            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+              <h4 className="font-semibold text-purple-800 mb-2">🗄️ Supabase Edge Functions</h4>
+              <p className="text-purple-700 text-sm">
+                Usa Supabase per creare funzioni backend serverless
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-neutral-800">Passaggi:</h4>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
+                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                  <div>
+                    <p className="font-medium text-neutral-800">Installa Supabase CLI</p>
+                    <code className="text-sm bg-gray-800 text-green-400 p-2 rounded block mt-1">npm install -g supabase</code>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
+                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                  <div>
+                    <p className="font-medium text-neutral-800">Crea Edge Function</p>
+                    <code className="text-sm bg-gray-800 text-green-400 p-2 rounded block mt-1">supabase functions new send-email</code>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
+                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                  <div>
+                    <p className="font-medium text-neutral-800">Deploy la funzione</p>
+                    <code className="text-sm bg-gray-800 text-green-400 p-2 rounded block mt-1">supabase functions deploy send-email</code>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -105,13 +154,14 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
 
             <div className="space-y-4">
               <h4 className="font-semibold text-neutral-800">Passaggi:</h4>
-              
               <div className="space-y-3">
                 <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
                   <span className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
                   <div>
                     <p className="font-medium text-neutral-800">Registrati su EmailJS</p>
-                    <p className="text-sm text-neutral-600">Vai su <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">emailjs.com</a> e crea un account gratuito</p>
+                    <p className="text-sm text-neutral-600">
+                      Vai su <a href="https://www.emailjs.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">emailjs.com</a> e crea un account gratuito
+                    </p>
                   </div>
                 </div>
 
@@ -145,48 +195,6 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
           </div>
         );
 
-      case 'formspree':
-        return (
-          <div className="space-y-6">
-            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
-              <h4 className="font-semibold text-purple-800 mb-2">📝 Formspree Setup</h4>
-              <p className="text-purple-700 text-sm">
-                Servizio semplice per form e invio email
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-neutral-800">Passaggi:</h4>
-              
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
-                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
-                  <div>
-                    <p className="font-medium text-neutral-800">Registrati su Formspree</p>
-                    <p className="text-sm text-neutral-600">Vai su <a href="https://formspree.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">formspree.io</a> e crea un account</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
-                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
-                  <div>
-                    <p className="font-medium text-neutral-800">Crea un nuovo form</p>
-                    <p className="text-sm text-neutral-600">Ottieni il tuo Form ID unico</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-lg">
-                  <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
-                  <div>
-                    <p className="font-medium text-neutral-800">Sostituisci YOUR_FORM_ID</p>
-                    <p className="text-sm text-neutral-600">Nel file emailService.js, sostituisci YOUR_FORM_ID con il tuo Form ID</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
       case 'backend':
         return (
           <div className="space-y-6">
@@ -199,7 +207,6 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
 
             <div className="space-y-4">
               <h4 className="font-semibold text-neutral-800">Opzioni:</h4>
-              
               <div className="space-y-3">
                 <div className="p-3 bg-neutral-50 rounded-lg">
                   <p className="font-medium text-neutral-800">Node.js + Express</p>
@@ -273,6 +280,7 @@ const EmailSetupGuide = ({ isOpen, onClose }) => {
                 <span className={`text-xs px-2 py-1 rounded-full ${
                   method.difficulty === 'Molto Facile' ? 'bg-green-100 text-green-800' :
                   method.difficulty === 'Facile' ? 'bg-blue-100 text-blue-800' :
+                  method.difficulty === 'Medio' ? 'bg-yellow-100 text-yellow-800' :
                   'bg-orange-100 text-orange-800'
                 }`}>
                   {method.difficulty}

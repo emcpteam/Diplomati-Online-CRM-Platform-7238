@@ -3,17 +3,26 @@ import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import Button from '../ui/Button';
 import { useApp } from '../../context/AppContext';
-import { sendEmail } from '../../utils/emailService';
+import { sendEmail, emailTemplates } from '../../utils/emailService';
 import toast from 'react-hot-toast';
 
-const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
-  const { state, dispatch } = useApp();
+const StudentEmailModal = ({ student, onClose, onEmailSent }) => {
+  const { dispatch } = useApp();
   const [sending, setSending] = useState(false);
   const [emailData, setEmailData] = useState({
     subject: '',
     content: '',
     template: null
   });
+
+  const handleTemplateSelect = (templateName) => {
+    const template = emailTemplates[templateName](student);
+    setEmailData({
+      subject: template.subject,
+      content: template.content,
+      template: templateName
+    });
+  };
 
   const handleSendNow = async () => {
     if (!emailData.subject.trim() || !emailData.content.trim()) {
@@ -23,9 +32,9 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
 
     setSending(true);
     try {
-      // Send the email using the SMTP settings
+      // Send email
       await sendEmail(
-        lead.email,
+        student.email,
         emailData.subject,
         emailData.content
       );
@@ -41,16 +50,15 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
         template: emailData.template
       };
 
-      const updatedLead = {
-        ...lead,
-        communications: [...(lead.communications || []), communication],
-        lastContact: new Date().toISOString()
+      const updatedStudent = {
+        ...student,
+        communications: [...(student.communications || []), communication]
       };
 
-      dispatch({ type: 'UPDATE_LEAD', payload: updatedLead });
+      dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
 
       if (onEmailSent) {
-        onEmailSent(updatedLead, communication);
+        onEmailSent(updatedStudent, communication);
       }
 
       toast.success('Email inviata con successo!');
@@ -87,7 +95,7 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
                   Invia Email
                 </h2>
                 <p className="text-neutral-600">
-                  {lead.firstName} {lead.lastName}
+                  {student.firstName} {student.lastName}
                 </p>
               </div>
             </div>
@@ -96,6 +104,40 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Template Selection */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Template Email
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => handleTemplateSelect('welcome')}
+                className="p-4 border-2 rounded-xl hover:border-primary-500 transition-colors text-left"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <FiIcons.FiUserPlus className="w-5 h-5 text-primary-600" />
+                  <span className="font-medium">Benvenuto</span>
+                </div>
+                <p className="text-sm text-neutral-500">
+                  Email di benvenuto per nuovi studenti
+                </p>
+              </button>
+              
+              <button
+                onClick={() => handleTemplateSelect('paymentReminder')}
+                className="p-4 border-2 rounded-xl hover:border-primary-500 transition-colors text-left"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <FiIcons.FiDollarSign className="w-5 h-5 text-primary-600" />
+                  <span className="font-medium">Promemoria Pagamento</span>
+                </div>
+                <p className="text-sm text-neutral-500">
+                  Sollecito per pagamenti in sospeso
+                </p>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               Oggetto Email *
@@ -126,10 +168,10 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
               <FiIcons.FiInfo className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
                 <p className="text-sm text-blue-800">
-                  L'email verrà inviata a: <strong>{lead.email}</strong>
+                  L'email verrà inviata a: <strong>{student.email}</strong>
                 </p>
                 <p className="text-sm text-blue-600 mt-1">
-                  Assicurati che il contenuto sia appropriato e professionale.
+                  Puoi utilizzare i template predefiniti o personalizzare il contenuto.
                 </p>
               </div>
             </div>
@@ -156,4 +198,4 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
   );
 };
 
-export default LeadEmailModal;
+export default StudentEmailModal;

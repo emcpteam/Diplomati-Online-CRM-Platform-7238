@@ -27,8 +27,8 @@ const StudentsManagement = () => {
   const filteredStudents = state.students
     .filter(student => {
       const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
+                           student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
       const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
       return matchesSearch && matchesStatus && matchesCourse;
@@ -50,10 +50,14 @@ const StudentsManagement = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'active': return <Badge variant="success">Attivo</Badge>;
-      case 'suspended': return <Badge variant="warning">Sospeso</Badge>;
-      case 'completed': return <Badge variant="primary">Completato</Badge>;
-      default: return <Badge variant="default">Sconosciuto</Badge>;
+      case 'active':
+        return <Badge variant="success">Attivo</Badge>;
+      case 'suspended':
+        return <Badge variant="warning">Sospeso</Badge>;
+      case 'completed':
+        return <Badge variant="primary">Completato</Badge>;
+      default:
+        return <Badge variant="default">Sconosciuto</Badge>;
     }
   };
 
@@ -83,6 +87,7 @@ const StudentsManagement = () => {
       'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
       'Scuola Esami': getAssignedSchool(student)?.name || 'Non assegnata'
     }));
+
     exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
     toast.success('Export completato con successo!');
   };
@@ -91,7 +96,23 @@ const StudentsManagement = () => {
     const toastId = toast.loading('Invio email in corso...');
     try {
       const emailData = emailTemplates[template](student);
-      await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
+      
+      // Get SMTP settings from state
+      const smtpSettings = state.settings.integrations.smtp;
+      
+      // Check if SMTP is configured
+      if (!smtpSettings || !smtpSettings.active) {
+        toast.error('SMTP non configurato. Configura SMTP nelle Integrazioni API', { id: toastId });
+        return;
+      }
+      
+      await sendEmail(
+        student.email,
+        emailData.subject,
+        emailData.content,
+        { smtp: smtpSettings }
+      );
+      
       const updatedStudent = {
         ...student,
         communications: [
@@ -105,6 +126,7 @@ const StudentsManagement = () => {
           }
         ]
       };
+      
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
@@ -229,6 +251,7 @@ const StudentsManagement = () => {
                     <span className="text-neutral-500">Corso:</span>
                     <span className="font-medium text-neutral-800">{student.course}</span>
                   </div>
+                  
                   {/* School Assignment */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Scuola Esami:</span>
@@ -249,6 +272,7 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
+                  
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-neutral-500">Pagamenti:</span>
@@ -263,6 +287,7 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
+                  
                   {student.convertedFromLead && (
                     <div className="flex items-center space-x-2">
                       <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
@@ -272,7 +297,7 @@ const StudentsManagement = () => {
                     </div>
                   )}
                 </div>
-
+                
                 {/* Action Buttons */}
                 <div className="mt-6 pt-4 border-t border-neutral-200">
                   <div className="grid grid-cols-2 gap-2 mb-3">
@@ -346,6 +371,7 @@ const StudentsManagement = () => {
             mode={selectedStudent ? 'edit' : 'add'}
           />
         )}
+        
         {showAssignSchoolModal && selectedStudent && (
           <AssignSchoolModal
             student={selectedStudent}

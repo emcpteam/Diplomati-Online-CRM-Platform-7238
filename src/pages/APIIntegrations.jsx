@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
@@ -9,7 +9,7 @@ import Badge from '../components/ui/Badge';
 import EmailLogsViewer from '../components/EmailLogsViewer';
 import EmailSetupGuide from '../components/EmailSetupGuide';
 import { useApp } from '../context/AppContext';
-import { testSmtpConnection } from '../utils';
+import { testSmtpConnection, setDefaultSender } from '../utils';
 import toast from 'react-hot-toast';
 
 const APIIntegrations = () => {
@@ -21,6 +21,22 @@ const APIIntegrations = () => {
   const [showEmailLogs, setShowEmailLogs] = useState(false);
   const [showEmailGuide, setShowEmailGuide] = useState(false);
 
+  // Default sender state
+  const [senderConfig, setSenderConfig] = useState({
+    fromName: state.settings?.integrations?.smtp?.fromName || 'Diplomati Online',
+    fromEmail: state.settings?.integrations?.smtp?.fromEmail || ''
+  });
+
+  // Effect to initialize sender config from existing settings
+  useEffect(() => {
+    if (state.settings?.integrations?.smtp) {
+      setSenderConfig({
+        fromName: state.settings.integrations.smtp.fromName || 'Diplomati Online',
+        fromEmail: state.settings.integrations.smtp.fromEmail || ''
+      });
+    }
+  }, [state.settings]);
+
   const integrations = [
     {
       id: 'smtp',
@@ -30,12 +46,54 @@ const APIIntegrations = () => {
       color: 'from-blue-500 to-blue-600',
       status: state.settings?.integrations?.smtp?.active ? 'connected' : 'disconnected',
       fields: [
-        { key: 'host', label: 'Host SMTP', type: 'text', placeholder: 'smtp.gmail.com', required: true },
-        { key: 'port', label: 'Porta', type: 'number', placeholder: '587', required: true },
-        { key: 'secure', label: 'Connessione Sicura', type: 'checkbox', description: 'Usa SSL/TLS' },
-        { key: 'username', label: 'Username/Email', type: 'email', placeholder: 'noreply@diplomatonline.it', required: true },
-        { key: 'password', label: 'Password', type: 'password', placeholder: '••••••••', required: true },
-        { key: 'fromName', label: 'Nome Mittente', type: 'text', placeholder: 'Diplomati Online', required: true }
+        {
+          key: 'host',
+          label: 'Host SMTP',
+          type: 'text',
+          placeholder: 'smtp.sendgrid.net',
+          required: true
+        },
+        {
+          key: 'port',
+          label: 'Porta',
+          type: 'number',
+          placeholder: '587',
+          required: true
+        },
+        {
+          key: 'secure',
+          label: 'Connessione Sicura',
+          type: 'checkbox',
+          description: 'Usa SSL/TLS'
+        },
+        {
+          key: 'username',
+          label: 'Username/Email',
+          type: 'email',
+          placeholder: 'apikey',
+          required: true
+        },
+        {
+          key: 'password',
+          label: 'Password/API Key',
+          type: 'password',
+          placeholder: '••••••••',
+          required: true
+        },
+        {
+          key: 'fromName',
+          label: 'Nome Mittente',
+          type: 'text',
+          placeholder: 'Diplomati Online',
+          required: true
+        },
+        {
+          key: 'fromEmail',
+          label: 'Email Mittente',
+          type: 'email',
+          placeholder: 'noreply@diplomatonline.it',
+          required: true
+        }
       ]
     },
     {
@@ -46,8 +104,20 @@ const APIIntegrations = () => {
       color: 'from-orange-500 to-orange-600',
       status: state.settings?.integrations?.zapier?.active ? 'connected' : 'disconnected',
       fields: [
-        { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'zap_...', required: true },
-        { key: 'webhookUrl', label: 'Webhook URL', type: 'url', placeholder: 'https://hooks.zapier.com/...', required: true }
+        {
+          key: 'apiKey',
+          label: 'API Key',
+          type: 'password',
+          placeholder: 'zap_...',
+          required: true
+        },
+        {
+          key: 'webhookUrl',
+          label: 'Webhook URL',
+          type: 'url',
+          placeholder: 'https://hooks.zapier.com/...',
+          required: true
+        }
       ]
     },
     {
@@ -58,17 +128,53 @@ const APIIntegrations = () => {
       color: 'from-green-500 to-green-600',
       status: state.settings?.integrations?.openai?.active ? 'connected' : 'disconnected',
       fields: [
-        { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'sk-...', required: true },
-        { key: 'model', label: 'Modello', type: 'select', options: ['gpt-4', 'gpt-3.5-turbo'], required: true },
-        { key: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1000' },
-        { key: 'temperature', label: 'Temperature', type: 'number', placeholder: '0.7', step: '0.1', min: '0', max: '1' }
+        {
+          key: 'apiKey',
+          label: 'API Key',
+          type: 'password',
+          placeholder: 'sk-...',
+          required: true
+        },
+        {
+          key: 'model',
+          label: 'Modello',
+          type: 'select',
+          options: ['gpt-4', 'gpt-3.5-turbo'],
+          required: true
+        },
+        {
+          key: 'maxTokens',
+          label: 'Max Tokens',
+          type: 'number',
+          placeholder: '1000'
+        },
+        {
+          key: 'temperature',
+          label: 'Temperature',
+          type: 'number',
+          placeholder: '0.7',
+          step: '0.1',
+          min: '0',
+          max: '1'
+        }
       ]
     }
   ];
 
   const handleEdit = (integrationData) => {
     setIntegration(integrationData);
-    setFormData(state.settings?.integrations?.[integrationData.id] || {});
+    
+    // If editing SMTP, include sender config
+    if (integrationData.id === 'smtp') {
+      setFormData({
+        ...state.settings?.integrations?.[integrationData.id],
+        fromName: senderConfig.fromName,
+        fromEmail: senderConfig.fromEmail
+      });
+    } else {
+      setFormData(state.settings?.integrations?.[integrationData.id] || {});
+    }
+    
     setIsEditMode(true);
   };
 
@@ -78,23 +184,25 @@ const APIIntegrations = () => {
     // Validate required fields
     const requiredFields = integration.fields.filter(field => field.required);
     const missingFields = requiredFields.filter(field => !formData[field.key]);
-
     if (missingFields.length > 0) {
       toast.error(`Campi obbligatori mancanti: ${missingFields.map(f => f.label).join(', ')}`);
       return;
     }
 
     setSubmitting(true);
-
     try {
       // Test SMTP connection if SMTP settings are being saved
       if (integration.id === 'smtp') {
         console.log('🧪 Testing SMTP connection before saving...');
+        
+        // Extract sender info
+        const { fromName, fromEmail } = formData;
+        
         try {
           await testSmtpConnection(formData);
           console.log('✅ SMTP test successful, saving configuration...');
           
-          // Update the integration with active status
+          // Update the integration with active status and sender info
           dispatch({
             type: 'UPDATE_INTEGRATION',
             payload: {
@@ -103,11 +211,17 @@ const APIIntegrations = () => {
                 ...formData,
                 active: true,
                 lastSync: new Date().toISOString(),
-                status: 'connected'
+                status: 'connected',
               }
             }
           });
-
+          
+          // Update default sender
+          setDefaultSender(fromName, fromEmail);
+          
+          // Update sender config state
+          setSenderConfig({ fromName, fromEmail });
+          
           toast.success('Configurazione SMTP salvata e testata con successo!');
         } catch (error) {
           console.error('❌ SMTP test failed:', error);
@@ -149,7 +263,7 @@ const APIIntegrations = () => {
         });
         toast.success(`Configurazione ${integration.name} aggiornata con successo!`);
       }
-
+      
       setSubmitting(false);
       setIsEditMode(false);
     } catch (error) {
@@ -184,7 +298,6 @@ const APIIntegrations = () => {
 
   const renderField = (field) => {
     const value = formData?.[field.key] || '';
-
     switch (field.type) {
       case 'checkbox':
         return (
@@ -267,28 +380,56 @@ const APIIntegrations = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button
-            variant="outline"
-            icon={FiIcons.FiHelpCircle}
-            onClick={() => setShowEmailGuide(true)}
-          >
+          <Button variant="outline" icon={FiIcons.FiHelpCircle} onClick={() => setShowEmailGuide(true)}>
             Guida Setup
           </Button>
-          <Button
-            variant="outline"
-            icon={FiIcons.FiMail}
-            onClick={() => setShowEmailLogs(true)}
-          >
+          <Button variant="outline" icon={FiIcons.FiMail} onClick={() => setShowEmailLogs(true)}>
             Log Email
           </Button>
-          <Button
-            variant="outline"
-            icon={FiIcons.FiRefreshCw}
-          >
+          <Button variant="outline" icon={FiIcons.FiRefreshCw}>
             Sincronizza
           </Button>
         </div>
       </div>
+
+      {/* Current Sender Info */}
+      <Card className="p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-neutral-800">
+              Configurazione Mittente Email
+            </h2>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-neutral-600">
+                <span className="font-medium">Nome mittente:</span> {senderConfig.fromName || 'Non configurato'}
+              </p>
+              <p className="text-sm text-neutral-600">
+                <span className="font-medium">Email mittente:</span> {senderConfig.fromEmail || 'Non configurata'}
+              </p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            icon={FiIcons.FiEdit}
+            onClick={() => {
+              const smtpConfig = state.settings?.integrations?.smtp;
+              if (smtpConfig) {
+                setIntegration(integrations.find(i => i.id === 'smtp'));
+                setFormData({
+                  ...smtpConfig,
+                  fromName: senderConfig.fromName,
+                  fromEmail: senderConfig.fromEmail
+                });
+                setIsEditMode(true);
+              } else {
+                toast.error('Configura prima le impostazioni SMTP');
+              }
+            }}
+          >
+            Modifica Mittente
+          </Button>
+        </div>
+      </Card>
 
       {/* Integrations Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -324,7 +465,7 @@ const APIIntegrations = () => {
                     )}
                   </div>
                 )}
-
+                
                 {integrationData.status === 'error' && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-800">
@@ -351,6 +492,7 @@ const APIIntegrations = () => {
                 >
                   Configura
                 </Button>
+                
                 {integrationData.status === 'connected' && (
                   <Button
                     size="sm"
@@ -397,10 +539,10 @@ const APIIntegrations = () => {
                 <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setIsEditMode(false)} />
               </div>
             </div>
-
+            
             <div className="p-6 space-y-6">
               {integration.fields.map(renderField)}
-
+              
               {integration.id === 'smtp' && (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
                   <div className="flex items-start space-x-3">
@@ -408,6 +550,7 @@ const APIIntegrations = () => {
                     <div>
                       <p className="text-sm font-medium text-blue-800">Configurazione SMTP</p>
                       <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                        <li>• Per SendGrid: smtp.sendgrid.net, porta 587, username "apikey", password = API Key</li>
                         <li>• Per Gmail: smtp.gmail.com, porta 587, attiva "App meno sicure"</li>
                         <li>• Per Outlook: smtp-mail.outlook.com, porta 587</li>
                         <li>• Assicurati che il server SMTP supporti STARTTLS</li>
@@ -423,7 +566,7 @@ const APIIntegrations = () => {
                 </div>
               )}
             </div>
-
+            
             <div className="p-6 border-t border-neutral-200">
               <div className="flex items-center justify-end space-x-3">
                 <Button variant="outline" onClick={() => setIsEditMode(false)}>
@@ -439,16 +582,10 @@ const APIIntegrations = () => {
       )}
 
       {/* Email Logs Modal */}
-      <EmailLogsViewer
-        isOpen={showEmailLogs}
-        onClose={() => setShowEmailLogs(false)}
-      />
+      <EmailLogsViewer isOpen={showEmailLogs} onClose={() => setShowEmailLogs(false)} />
 
       {/* Email Setup Guide Modal */}
-      <EmailSetupGuide
-        isOpen={showEmailGuide}
-        onClose={() => setShowEmailGuide(false)}
-      />
+      <EmailSetupGuide isOpen={showEmailGuide} onClose={() => setShowEmailGuide(false)} />
     </div>
   );
 };
