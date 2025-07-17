@@ -27,8 +27,14 @@ import {
   ElectronicInvoicing
 } from './pages';
 
+// Auth pages
+import QuestLogin from './pages/QuestLogin';
+import QuestOnboarding from './pages/QuestOnboarding';
+import QuestProtectedRoute from './components/QuestProtectedRoute';
+
 // Context
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider } from './context/AuthContext';
 
 const AppContent = () => {
   const { state } = useApp();
@@ -186,18 +192,31 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AppProvider>
-      <Router>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
-            duration: 4000,
-          }}
-        />
-        <AppContent />
-      </Router>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <Router>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
+              duration: 4000,
+            }}
+          />
+          <Routes>
+            <Route path="/quest-login" element={<QuestLogin />} />
+            <Route 
+              path="/onboarding" 
+              element={
+                <QuestProtectedRoute>
+                  <QuestOnboarding />
+                </QuestProtectedRoute>
+              } 
+            />
+            <Route path="/*" element={<AppContent />} />
+          </Routes>
+        </Router>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
