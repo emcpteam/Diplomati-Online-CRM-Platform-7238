@@ -1,10 +1,11 @@
-```jsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import SafeIcon from '../common/SafeIcon';
-import { Card, Button, Input } from '../components/UI';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
 import MediaGallery from '../components/MediaGallery';
 import { useApp } from '../context/AppContext';
 import { validateFile, uploadFile } from '../utils';
@@ -32,25 +33,18 @@ const CompanyConfig = () => {
       linkedin: ''
     }
   });
-
   const [isEditing, setIsEditing] = useState(false);
   const [showMediaGallery, setShowMediaGallery] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSocialMediaChange = (platform, value) => {
     setFormData(prev => ({
       ...prev,
-      socialMedia: {
-        ...prev.socialMedia,
-        [platform]: value
-      }
+      socialMedia: { ...prev.socialMedia, [platform]: value }
     }));
   };
 
@@ -102,7 +96,6 @@ const CompanyConfig = () => {
       },
       exportDate: new Date().toISOString()
     };
-
     const dataStr = JSON.stringify(companyData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -149,10 +142,8 @@ const CompanyConfig = () => {
         <h3 className="text-lg font-semibold text-neutral-800 mb-4">Logo Aziendale</h3>
         <div className="flex items-center space-x-6">
           <div className="relative">
-            <div
-              className={`w-24 h-24 bg-neutral-100 rounded-2xl flex items-center justify-center border-2 ${
-                isEditing ? 'border-dashed border-primary-300 hover:border-primary-500' : 'border-neutral-200'
-              } relative overflow-hidden transition-colors`}
+            <div 
+              className={`w-24 h-24 bg-neutral-100 rounded-2xl flex items-center justify-center border-2 ${isEditing ? 'border-dashed border-primary-300 hover:border-primary-500' : 'border-neutral-200'} relative overflow-hidden transition-colors`}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -403,20 +394,21 @@ const CompanyConfig = () => {
       </Card>
 
       {/* Media Gallery Modal */}
-      <MediaGallery
-        isOpen={showMediaGallery}
-        onClose={() => setShowMediaGallery(false)}
-        onSelect={(media) => {
-          handleInputChange('logo', media.url);
-          setShowMediaGallery(false);
-          toast.success('Logo aggiornato con successo!');
-        }}
-        allowedTypes={['image/*']}
-        title="Seleziona Logo Aziendale"
-      />
+      {showMediaGallery && (
+        <MediaGallery
+          isOpen={showMediaGallery}
+          onClose={() => setShowMediaGallery(false)}
+          onSelect={(media) => {
+            handleInputChange('logo', media.url);
+            setShowMediaGallery(false);
+            toast.success('Logo aggiornato con successo!');
+          }}
+          allowedTypes={['image/*']}
+          title="Seleziona Logo Aziendale"
+        />
+      )}
     </div>
   );
 };
 
 export default CompanyConfig;
-```
