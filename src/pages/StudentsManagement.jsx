@@ -24,11 +24,17 @@ const StudentsManagement = () => {
   const [modalType, setModalType] = useState('');
   const [showAssignSchoolModal, setShowAssignSchoolModal] = useState(false);
 
-  const filteredStudents = state.students
+  // Ensure we have students array
+  const students = state.students || [];
+  const courses = state.courses || [];
+  const schools = state.schools || [];
+
+  const filteredStudents = students
     .filter(student => {
-      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = 
+        student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
       const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
       return matchesSearch && matchesStatus && matchesCourse;
@@ -71,7 +77,7 @@ const StudentsManagement = () => {
 
   const getAssignedSchool = (student) => {
     if (!student.assignedSchool) return null;
-    return state.schools.find(school => school.id === student.assignedSchool);
+    return schools.find(school => school.id === student.assignedSchool);
   };
 
   const handleExport = () => {
@@ -96,23 +102,20 @@ const StudentsManagement = () => {
     const toastId = toast.loading('Invio email in corso...');
     try {
       const emailData = emailTemplates[template](student);
-      
-      // Get SMTP settings from state
-      const smtpSettings = state.settings.integrations.smtp;
-      
-      // Check if SMTP is configured
+      const smtpSettings = state.settings?.integrations?.smtp;
+
       if (!smtpSettings || !smtpSettings.active) {
         toast.error('SMTP non configurato. Configura SMTP nelle Integrazioni API', { id: toastId });
         return;
       }
-      
+
       await sendEmail(
         student.email,
         emailData.subject,
         emailData.content,
         { smtp: smtpSettings }
       );
-      
+
       const updatedStudent = {
         ...student,
         communications: [
@@ -126,7 +129,7 @@ const StudentsManagement = () => {
           }
         ]
       };
-      
+
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
@@ -146,6 +149,18 @@ const StudentsManagement = () => {
     );
   };
 
+  const handleAddStudent = () => {
+    setModalType('student');
+    setSelectedStudent(null);
+    setShowModal(true);
+  };
+
+  const handleEditStudent = (student) => {
+    setSelectedStudent(student);
+    setModalType('student');
+    setShowModal(true);
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -162,14 +177,7 @@ const StudentsManagement = () => {
           <Button variant="outline" icon={FiIcons.FiDownload} onClick={handleExport}>
             Esporta CSV
           </Button>
-          <Button
-            icon={FiIcons.FiPlus}
-            onClick={() => {
-              setModalType('student');
-              setSelectedStudent(null);
-              setShowModal(true);
-            }}
-          >
+          <Button icon={FiIcons.FiPlus} onClick={handleAddStudent}>
             Nuovo Studente
           </Button>
         </div>
@@ -200,7 +208,7 @@ const StudentsManagement = () => {
             className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">Tutti i corsi</option>
-            {state.courses.map(course => (
+            {courses.map(course => (
               <option key={course.id} value={course.name}>{course.name}</option>
             ))}
           </select>
@@ -218,143 +226,147 @@ const StudentsManagement = () => {
       </Card>
 
       {/* Students Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredStudents.map((student, index) => {
-          const paymentProgress = getPaymentProgress(student);
-          const assignedSchool = getAssignedSchool(student);
-          return (
-            <motion.div
-              key={student.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="p-6 hover:shadow-medium transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-medium">
-                        {student.firstName[0]}{student.lastName[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-neutral-800">
-                        {student.firstName} {student.lastName}
-                      </h3>
-                      <p className="text-sm text-neutral-500">{student.email}</p>
-                    </div>
-                  </div>
-                  {getStatusBadge(student.status)}
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500">Corso:</span>
-                    <span className="font-medium text-neutral-800">{student.course}</span>
-                  </div>
-                  
-                  {/* School Assignment */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500">Scuola Esami:</span>
-                    <div className="flex items-center space-x-2">
-                      {assignedSchool ? (
-                        <span className="font-medium text-neutral-800 text-xs">
-                          {assignedSchool.name}
+      {filteredStudents.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredStudents.map((student, index) => {
+            const paymentProgress = getPaymentProgress(student);
+            const assignedSchool = getAssignedSchool(student);
+
+            return (
+              <motion.div
+                key={student.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="p-6 hover:shadow-medium transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                        <span className="text-white font-medium">
+                          {student.firstName[0]}{student.lastName[0]}
                         </span>
-                      ) : (
-                        <span className="text-orange-600 text-xs">Non assegnata</span>
-                      )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-neutral-800">
+                          {student.firstName} {student.lastName}
+                        </h3>
+                        <p className="text-sm text-neutral-500">{student.email}</p>
+                      </div>
+                    </div>
+                    {getStatusBadge(student.status)}
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-neutral-500">Corso:</span>
+                      <span className="font-medium text-neutral-800">{student.course}</span>
+                    </div>
+
+                    {/* School Assignment */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-neutral-500">Scuola Esami:</span>
+                      <div className="flex items-center space-x-2">
+                        {assignedSchool ? (
+                          <span className="font-medium text-neutral-800 text-xs">
+                            {assignedSchool.name}
+                          </span>
+                        ) : (
+                          <span className="text-orange-600 text-xs">Non assegnata</span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={assignedSchool ? FiIcons.FiEdit : FiIcons.FiMapPin}
+                          onClick={() => handleAssignSchool(student)}
+                          className="p-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-neutral-500">Pagamenti:</span>
+                        <span className="font-medium text-neutral-800">
+                          €{student.paidAmount} / €{student.totalAmount}
+                        </span>
+                      </div>
+                      <div className="w-full bg-neutral-200 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${paymentProgress.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {student.convertedFromLead && (
+                      <div className="flex items-center space-x-2">
+                        <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
+                        <span className="text-xs text-accent-600 font-medium">
+                          Convertito da Lead
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-6 pt-4 border-t border-neutral-200">
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                       <Button
                         variant="ghost"
                         size="sm"
-                        icon={assignedSchool ? FiIcons.FiEdit : FiIcons.FiMapPin}
-                        onClick={() => handleAssignSchool(student)}
-                        className="p-1"
-                      />
+                        icon={FiIcons.FiMail}
+                        onClick={() => handleSendEmail(student, 'welcome')}
+                      >
+                        Email
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={FiIcons.FiFileText}
+                        onClick={() => generateStudentContract(student)}
+                      >
+                        Contratto
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        icon={FiIcons.FiEdit}
+                        onClick={() => handleEditStudent(student)}
+                      >
+                        Modifica
+                      </Button>
+                      <Link to={`/students/${student.id}`}>
+                        <Button size="sm" icon={FiIcons.FiEye}>
+                          Dettagli
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-neutral-500">Pagamenti:</span>
-                      <span className="font-medium text-neutral-800">
-                        €{student.paidAmount} / €{student.totalAmount}
-                      </span>
-                    </div>
-                    <div className="w-full bg-neutral-200 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${paymentProgress.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  {student.convertedFromLead && (
-                    <div className="flex items-center space-x-2">
-                      <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
-                      <span className="text-xs text-accent-600 font-medium">
-                        Convertito da Lead
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="mt-6 pt-4 border-t border-neutral-200">
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={FiIcons.FiMail}
-                      onClick={() => handleSendEmail(student, 'welcome')}
-                    >
-                      Email
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon={FiIcons.FiEdit}
-                      onClick={() => {
-                        setSelectedStudent(student);
-                        setModalType('student');
-                        setShowModal(true);
-                      }}
-                    >
-                      Modifica
-                    </Button>
-                    <Link to={`/students/${student.id}`}>
-                      <Button size="sm" icon={FiIcons.FiEye}>Dettagli</Button>
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Empty State */}
-      {filteredStudents.length === 0 && (
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Empty State */
         <Card className="p-12 text-center">
           <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center mx-auto mb-4">
             <SafeIcon icon={FiIcons.FiUsers} className="w-8 h-8 text-neutral-400" />
           </div>
           <h3 className="text-lg font-medium text-neutral-800 mb-2">
-            Nessuno studente trovato
+            {students.length === 0 ? 'Nessuno studente presente' : 'Nessuno studente trovato'}
           </h3>
           <p className="text-neutral-500 mb-6">
-            Non ci sono studenti che corrispondono ai filtri selezionati.
+            {students.length === 0 
+              ? 'Aggiungi il primo studente per iniziare a gestire le iscrizioni.'
+              : 'Non ci sono studenti che corrispondono ai filtri selezionati.'
+            }
           </p>
-          <Button
-            icon={FiIcons.FiPlus}
-            onClick={() => {
-              setModalType('student');
-              setSelectedStudent(null);
-              setShowModal(true);
-            }}
-          >
-            Aggiungi Primo Studente
+          <Button icon={FiIcons.FiPlus} onClick={handleAddStudent}>
+            {students.length === 0 ? 'Aggiungi Primo Studente' : 'Aggiungi Studente'}
           </Button>
         </Card>
       )}
@@ -371,7 +383,6 @@ const StudentsManagement = () => {
             mode={selectedStudent ? 'edit' : 'add'}
           />
         )}
-        
         {showAssignSchoolModal && selectedStudent && (
           <AssignSchoolModal
             student={selectedStudent}
@@ -385,38 +396,40 @@ const StudentsManagement = () => {
       </AnimatePresence>
 
       {/* Stats Footer */}
-      <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 text-center">
-          <div>
-            <p className="text-2xl font-bold text-neutral-800">{state.students.length}</p>
-            <p className="text-sm text-neutral-500">Totale Studenti</p>
+      {students.length > 0 && (
+        <Card className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 text-center">
+            <div>
+              <p className="text-2xl font-bold text-neutral-800">{students.length}</p>
+              <p className="text-sm text-neutral-500">Totale Studenti</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-accent-600">
+                {students.filter(s => s.status === 'active').length}
+              </p>
+              <p className="text-sm text-neutral-500">Attivi</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-primary-600">
+                €{students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
+              </p>
+              <p className="text-sm text-neutral-500">Incassi Totali</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-orange-600">
+                €{students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
+              </p>
+              <p className="text-sm text-neutral-500">Da Incassare</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-secondary-600">
+                {students.filter(s => s.assignedSchool).length}
+              </p>
+              <p className="text-sm text-neutral-500">Con Scuola Esami</p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-accent-600">
-              {state.students.filter(s => s.status === 'active').length}
-            </p>
-            <p className="text-sm text-neutral-500">Attivi</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-primary-600">
-              €{state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
-            </p>
-            <p className="text-sm text-neutral-500">Incassi Totali</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-warning-600">
-              €{state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
-            </p>
-            <p className="text-sm text-neutral-500">Da Incassare</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-secondary-600">
-              {state.students.filter(s => s.assignedSchool).length}
-            </p>
-            <p className="text-sm text-neutral-500">Con Scuola Esami</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 };
