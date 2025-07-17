@@ -1,4 +1,15 @@
-// PDF Generation utilities
+// Helper function to download text as file
+const downloadPDF = (content, filename) => {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+  return true;
+};
+
 export const generateStudentContract = (student) => {
   const content = `
 CONTRATTO DI ISCRIZIONE
@@ -30,7 +41,6 @@ P.IVA: IT12345678901
 
 Generato il: ${new Date().toLocaleDateString('it-IT')}
 `;
-
   return downloadPDF(content, `contratto-${student.firstName}-${student.lastName}.txt`);
 };
 
@@ -39,8 +49,7 @@ export const generateQuotePDF = (quote) => {
 PREVENTIVO PERSONALIZZATO
 Diplomati Online Srl
 
-DATI CLIENTE:
-${quote.studentName}
+DATI CLIENTE: ${quote.studentName}
 
 DETTAGLI OFFERTA:
 Corso: ${quote.course}
@@ -49,8 +58,7 @@ ${quote.promoPrice > 0 ? `Sconto Promozionale: -€${quote.promoPrice}` : ''}
 Totale: €${quote.basePrice - quote.promoPrice}
 
 MODALITÀ DI PAGAMENTO:
-${quote.paymentMethod === 'wire_transfer' ? 'Bonifico Completo' : 
-  quote.paymentMethod === 'financing' ? 'Finanziamento Banca Sella' : 'Piano Ibrido'}
+${quote.paymentMethod === 'wire_transfer' ? 'Bonifico Completo' : quote.paymentMethod === 'financing' ? 'Finanziamento Banca Sella' : 'Piano Ibrido'}
 
 VALIDITÀ:
 Offerta valida fino al: ${new Date(quote.validUntil).toLocaleDateString('it-IT')}
@@ -64,7 +72,6 @@ P.IVA: IT12345678901
 
 Generato il: ${new Date().toLocaleDateString('it-IT')}
 `;
-
   return downloadPDF(content, `preventivo-${quote.studentName.replace(' ', '-')}.txt`);
 };
 
@@ -93,14 +100,12 @@ Via Roma 123, Milano
 
 Generato il: ${new Date().toLocaleDateString('it-IT')}
 `;
-
   return downloadPDF(content, `ricevuta-${student.firstName}-${student.lastName}-${Date.now()}.txt`);
 };
 
 export const generateMonthlyReport = (data) => {
   const content = `
-REPORT MENSILE
-${new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+REPORT MENSILE ${new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
 
 STATISTICHE GENERALI:
 - Studenti Totali: ${data.totalStudents}
@@ -124,7 +129,6 @@ PAGAMENTI:
 Diplomati Online Srl
 Generato il: ${new Date().toLocaleDateString('it-IT')}
 `;
-
   return downloadPDF(content, `report-mensile-${new Date().getMonth() + 1}-${new Date().getFullYear()}.txt`);
 };
 
@@ -151,28 +155,14 @@ DETTAGLI ESAME:
 Data Richiesta: ${new Date(examDate).toLocaleDateString('it-IT')}
 Materie d'Esame:
 ${subjects.map(subject => `- ${subject}`).join('\n')}
-
 Anno Scolastico: ${new Date().getFullYear()}/${new Date().getFullYear() + 1}
 
-Si richiede gentilmente di procedere con l'iscrizione all'esame di idoneità/maturità 
-per lo studente sopra indicato.
+Si richiede gentilmente di procedere con l'iscrizione all'esame di idoneità/maturità per lo studente sopra indicato.
 
 Diplomati Online Srl
 P.IVA: IT12345678901
 
 Generato il: ${new Date().toLocaleDateString('it-IT')}
 `;
-
   return downloadPDF(content, `richiesta-esame-${student.firstName}-${student.lastName}.txt`);
-};
-
-const downloadPDF = (content, filename) => {
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-  return true;
 };

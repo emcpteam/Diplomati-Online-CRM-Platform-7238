@@ -46,54 +46,13 @@ const APIIntegrations = () => {
       color: 'from-blue-500 to-blue-600',
       status: state.settings?.integrations?.smtp?.active ? 'connected' : 'disconnected',
       fields: [
-        {
-          key: 'host',
-          label: 'Host SMTP',
-          type: 'text',
-          placeholder: 'smtp.sendgrid.net',
-          required: true
-        },
-        {
-          key: 'port',
-          label: 'Porta',
-          type: 'number',
-          placeholder: '587',
-          required: true
-        },
-        {
-          key: 'secure',
-          label: 'Connessione Sicura',
-          type: 'checkbox',
-          description: 'Usa SSL/TLS'
-        },
-        {
-          key: 'username',
-          label: 'Username/Email',
-          type: 'email',
-          placeholder: 'apikey',
-          required: true
-        },
-        {
-          key: 'password',
-          label: 'Password/API Key',
-          type: 'password',
-          placeholder: '••••••••',
-          required: true
-        },
-        {
-          key: 'fromName',
-          label: 'Nome Mittente',
-          type: 'text',
-          placeholder: 'Diplomati Online',
-          required: true
-        },
-        {
-          key: 'fromEmail',
-          label: 'Email Mittente',
-          type: 'email',
-          placeholder: 'noreply@diplomatonline.it',
-          required: true
-        }
+        { key: 'host', label: 'Host SMTP', type: 'text', placeholder: 'smtp.sendgrid.net', required: true },
+        { key: 'port', label: 'Porta', type: 'number', placeholder: '587', required: true },
+        { key: 'secure', label: 'Connessione Sicura', type: 'checkbox', description: 'Usa SSL/TLS' },
+        { key: 'username', label: 'Username/Email', type: 'email', placeholder: 'apikey', required: true },
+        { key: 'password', label: 'Password/API Key', type: 'password', placeholder: '••••••••', required: true },
+        { key: 'fromName', label: 'Nome Mittente', type: 'text', placeholder: 'Diplomati Online', required: true },
+        { key: 'fromEmail', label: 'Email Mittente', type: 'email', placeholder: 'noreply@diplomatonline.it', required: true }
       ]
     },
     {
@@ -104,20 +63,8 @@ const APIIntegrations = () => {
       color: 'from-orange-500 to-orange-600',
       status: state.settings?.integrations?.zapier?.active ? 'connected' : 'disconnected',
       fields: [
-        {
-          key: 'apiKey',
-          label: 'API Key',
-          type: 'password',
-          placeholder: 'zap_...',
-          required: true
-        },
-        {
-          key: 'webhookUrl',
-          label: 'Webhook URL',
-          type: 'url',
-          placeholder: 'https://hooks.zapier.com/...',
-          required: true
-        }
+        { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'zap_...', required: true },
+        { key: 'webhookUrl', label: 'Webhook URL', type: 'url', placeholder: 'https://hooks.zapier.com/...', required: true }
       ]
     },
     {
@@ -128,35 +75,10 @@ const APIIntegrations = () => {
       color: 'from-green-500 to-green-600',
       status: state.settings?.integrations?.openai?.active ? 'connected' : 'disconnected',
       fields: [
-        {
-          key: 'apiKey',
-          label: 'API Key',
-          type: 'password',
-          placeholder: 'sk-...',
-          required: true
-        },
-        {
-          key: 'model',
-          label: 'Modello',
-          type: 'select',
-          options: ['gpt-4', 'gpt-3.5-turbo'],
-          required: true
-        },
-        {
-          key: 'maxTokens',
-          label: 'Max Tokens',
-          type: 'number',
-          placeholder: '1000'
-        },
-        {
-          key: 'temperature',
-          label: 'Temperature',
-          type: 'number',
-          placeholder: '0.7',
-          step: '0.1',
-          min: '0',
-          max: '1'
-        }
+        { key: 'apiKey', label: 'API Key', type: 'password', placeholder: 'sk-...', required: true },
+        { key: 'model', label: 'Modello', type: 'select', options: ['gpt-4', 'gpt-3.5-turbo'], required: true },
+        { key: 'maxTokens', label: 'Max Tokens', type: 'number', placeholder: '1000' },
+        { key: 'temperature', label: 'Temperature', type: 'number', placeholder: '0.7', step: '0.1', min: '0', max: '1' }
       ]
     }
   ];
@@ -184,22 +106,26 @@ const APIIntegrations = () => {
     // Validate required fields
     const requiredFields = integration.fields.filter(field => field.required);
     const missingFields = requiredFields.filter(field => !formData[field.key]);
+    
     if (missingFields.length > 0) {
       toast.error(`Campi obbligatori mancanti: ${missingFields.map(f => f.label).join(', ')}`);
       return;
     }
 
     setSubmitting(true);
+
     try {
       // Test SMTP connection if SMTP settings are being saved
       if (integration.id === 'smtp') {
         console.log('🧪 Testing SMTP connection before saving...');
-        
         // Extract sender info
         const { fromName, fromEmail } = formData;
         
         try {
+          const toastId = toast.loading('Test connessione SMTP...');
+          
           await testSmtpConnection(formData);
+          
           console.log('✅ SMTP test successful, saving configuration...');
           
           // Update the integration with active status and sender info
@@ -222,12 +148,12 @@ const APIIntegrations = () => {
           // Update sender config state
           setSenderConfig({ fromName, fromEmail });
           
-          toast.success('Configurazione SMTP salvata e testata con successo!');
+          toast.success('Configurazione SMTP salvata e testata con successo!', { id: toastId });
         } catch (error) {
           console.error('❌ SMTP test failed:', error);
           
           // Show setup guide for better user experience
-          if (error.message.includes('backend') || error.message.includes('Netlify') || error.message.includes('EmailJS')) {
+          if (error.message.includes('backend') || error.message.includes('Netlify') || error.message.includes('EmailJS') || error.message.includes('Function not found')) {
             toast.error('SMTP configurato ma servizio email non attivo. Apri la guida setup.');
             setShowEmailGuide(true);
           } else {
@@ -276,17 +202,22 @@ const APIIntegrations = () => {
   const handleTestConnection = async (integrationData) => {
     if (integrationData.id === 'smtp') {
       const smtpConfig = state.settings?.integrations?.smtp;
+      
       if (!smtpConfig || !smtpConfig.active) {
         toast.error('Configura prima le impostazioni SMTP');
         return;
       }
-
+      
       toast.loading('Test connessione SMTP...', { id: 'smtp-test' });
+      
       try {
         await testSmtpConnection(smtpConfig);
         toast.success('Connessione SMTP testata con successo!', { id: 'smtp-test' });
+        
+        // Show email logs after successful test
+        setShowEmailLogs(true);
       } catch (error) {
-        if (error.message.includes('backend') || error.message.includes('servizio')) {
+        if (error.message.includes('backend') || error.message.includes('servizio') || error.message.includes('Function not found')) {
           toast.error('SMTP configurato ma servizio non attivo. Consulta la guida setup.', { id: 'smtp-test' });
           setShowEmailGuide(true);
         } else {
@@ -298,6 +229,7 @@ const APIIntegrations = () => {
 
   const renderField = (field) => {
     const value = formData?.[field.key] || '';
+    
     switch (field.type) {
       case 'checkbox':
         return (
@@ -317,7 +249,7 @@ const APIIntegrations = () => {
             )}
           </div>
         );
-
+        
       case 'select':
         return (
           <div key={field.key}>
@@ -337,7 +269,7 @@ const APIIntegrations = () => {
             </select>
           </div>
         );
-
+        
       default:
         return (
           <Input
@@ -358,12 +290,9 @@ const APIIntegrations = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'connected':
-        return <Badge variant="success">Connesso</Badge>;
-      case 'error':
-        return <Badge variant="danger">Errore</Badge>;
-      default:
-        return <Badge variant="default">Disconnesso</Badge>;
+      case 'connected': return <Badge variant="success">Connesso</Badge>;
+      case 'error': return <Badge variant="danger">Errore</Badge>;
+      default: return <Badge variant="default">Disconnesso</Badge>;
     }
   };
 
@@ -380,10 +309,18 @@ const APIIntegrations = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
-          <Button variant="outline" icon={FiIcons.FiHelpCircle} onClick={() => setShowEmailGuide(true)}>
+          <Button
+            variant="outline"
+            icon={FiIcons.FiHelpCircle}
+            onClick={() => setShowEmailGuide(true)}
+          >
             Guida Setup
           </Button>
-          <Button variant="outline" icon={FiIcons.FiMail} onClick={() => setShowEmailLogs(true)}>
+          <Button
+            variant="outline"
+            icon={FiIcons.FiMail}
+            onClick={() => setShowEmailLogs(true)}
+          >
             Log Email
           </Button>
           <Button variant="outline" icon={FiIcons.FiRefreshCw}>
@@ -408,8 +345,8 @@ const APIIntegrations = () => {
               </p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             icon={FiIcons.FiEdit}
             onClick={() => {
               const smtpConfig = state.settings?.integrations?.smtp;
@@ -453,7 +390,7 @@ const APIIntegrations = () => {
                 </div>
                 {getStatusBadge(integrationData.status)}
               </div>
-
+              
               <div className="space-y-3">
                 {integrationData.status === 'connected' && (
                   <div className="text-sm text-neutral-600">
@@ -482,7 +419,7 @@ const APIIntegrations = () => {
                   </div>
                 )}
               </div>
-
+              
               <div className="flex items-center space-x-2 mt-6">
                 <Button
                   size="sm"
@@ -550,7 +487,7 @@ const APIIntegrations = () => {
                     <div>
                       <p className="text-sm font-medium text-blue-800">Configurazione SMTP</p>
                       <ul className="text-sm text-blue-700 mt-2 space-y-1">
-                        <li>• Per SendGrid: smtp.sendgrid.net, porta 587, username "apikey", password = API Key</li>
+                        <li>• Per SendGrid: smtp.sendgrid.net, porta 587, username "apikey", password=API Key</li>
                         <li>• Per Gmail: smtp.gmail.com, porta 587, attiva "App meno sicure"</li>
                         <li>• Per Outlook: smtp-mail.outlook.com, porta 587</li>
                         <li>• Assicurati che il server SMTP supporti STARTTLS</li>
@@ -583,7 +520,7 @@ const APIIntegrations = () => {
 
       {/* Email Logs Modal */}
       <EmailLogsViewer isOpen={showEmailLogs} onClose={() => setShowEmailLogs(false)} />
-
+      
       {/* Email Setup Guide Modal */}
       <EmailSetupGuide isOpen={showEmailGuide} onClose={() => setShowEmailGuide(false)} />
     </div>

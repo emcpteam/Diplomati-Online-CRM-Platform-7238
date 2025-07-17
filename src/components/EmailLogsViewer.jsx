@@ -4,7 +4,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
-import { getEmailLogs, clearEmailLogs } from '../utils/emailService';
+import { getEmailLogs, clearEmailLogs } from '../utils';
 import toast from 'react-hot-toast';
 
 const EmailLogsViewer = ({ isOpen, onClose }) => {
@@ -37,12 +37,9 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'sent':
-        return <Badge variant="success">Inviata</Badge>;
-      case 'failed':
-        return <Badge variant="danger">Fallita</Badge>;
-      default:
-        return <Badge variant="default">{status}</Badge>;
+      case 'sent': return <Badge variant="success">Inviata</Badge>;
+      case 'failed': return <Badge variant="danger">Fallita</Badge>;
+      default: return <Badge variant="default">{status}</Badge>;
     }
   };
 
@@ -72,25 +69,16 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                icon={FiIcons.FiRefreshCw}
-                onClick={loadLogs}
-              >
+              <Button variant="outline" icon={FiIcons.FiRefreshCw} onClick={loadLogs}>
                 Aggiorna
               </Button>
-              <Button
-                variant="outline"
-                icon={FiIcons.FiTrash2}
-                onClick={handleClearLogs}
-              >
+              <Button variant="outline" icon={FiIcons.FiTrash2} onClick={handleClearLogs}>
                 Cancella Log
               </Button>
               <Button variant="ghost" icon={FiIcons.FiX} onClick={onClose} />
             </div>
           </div>
         </div>
-
         <div className="p-6">
           {/* Filters */}
           <div className="flex items-center space-x-4 mb-6">
@@ -113,18 +101,13 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
             {filteredLogs.length > 0 ? (
               <div className="space-y-3">
                 {filteredLogs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-4 bg-neutral-50 rounded-xl border border-neutral-200"
-                  >
+                  <div key={log.id} className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <SafeIcon
-                            icon={log.status === 'sent' ? FiIcons.FiCheckCircle : FiIcons.FiXCircle}
-                            className={`w-5 h-5 ${
-                              log.status === 'sent' ? 'text-green-500' : 'text-red-500'
-                            }`}
+                          <SafeIcon 
+                            icon={log.status === 'sent' ? FiIcons.FiCheckCircle : FiIcons.FiXCircle} 
+                            className={`w-5 h-5 ${log.status === 'sent' ? 'text-green-500' : 'text-red-500'}`} 
                           />
                           <div>
                             <p className="font-medium text-neutral-800">{log.subject}</p>
@@ -133,7 +116,6 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
                             </p>
                           </div>
                         </div>
-                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-neutral-500">SMTP Host:</span>
@@ -146,7 +128,6 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
                             </div>
                           )}
                         </div>
-                        
                         {log.error && (
                           <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-sm font-medium text-red-800">Errore:</p>
@@ -154,7 +135,6 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
                           </div>
                         )}
                       </div>
-                      
                       <div className="ml-4">
                         {getStatusBadge(log.status)}
                       </div>
@@ -174,7 +154,6 @@ const EmailLogsViewer = ({ isOpen, onClose }) => {
             )}
           </div>
         </div>
-
         <div className="p-6 border-t border-neutral-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-neutral-500">

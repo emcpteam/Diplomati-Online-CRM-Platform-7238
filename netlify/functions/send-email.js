@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { to, subject, html, text, smtp, from } = JSON.parse(event.body);
-
+    
     // Validate required fields
     if (!to || !subject || !html || !smtp) {
       return {
@@ -36,7 +36,9 @@ exports.handler = async (event, context) => {
 
     // Prepare email options
     const mailOptions = {
-      from: from && from.name && from.email ? `"${from.name}" <${from.email}>` : `"Diplomati Online" <${smtp.auth.user}>`,
+      from: from && from.name && from.email 
+        ? `"${from.name}" <${from.email}>`
+        : `"Diplomati Online" <${smtp.auth.user}>`,
       to: to,
       subject: subject,
       html: html,
@@ -61,7 +63,6 @@ exports.handler = async (event, context) => {
 
     // Send email
     const info = await transporter.sendMail(mailOptions);
-
     console.log('Email sent:', info.messageId);
 
     return {
@@ -76,9 +77,9 @@ exports.handler = async (event, context) => {
         response: info.response
       })
     };
-
   } catch (error) {
     console.error('Email sending error:', error);
+    
     return {
       statusCode: 500,
       headers: {

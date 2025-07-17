@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import { useApp } from '../context/AppContext';
-import { sendEmail, emailTemplates } from '../utils/emailService';
+import { sendEmail, emailTemplates } from '../utils';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -25,7 +25,6 @@ const StudentProfile = () => {
 
   const handleSendEmail = async (student, template) => {
     const toastId = toast.loading('Invio email in corso...');
-    
     try {
       // Get the template data
       const emailData = emailTemplates[template](student);
@@ -46,7 +45,7 @@ const StudentProfile = () => {
         emailData.content,
         { smtp: smtpSettings }
       );
-      
+
       // Update student record with communication
       const updatedStudent = {
         ...student,
@@ -61,7 +60,6 @@ const StudentProfile = () => {
           },
         ],
       };
-      
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       setStudent(updatedStudent);
       toast.success('Email inviata con successo!', { id: toastId });
@@ -126,7 +124,7 @@ const StudentProfile = () => {
                 </div>
               </div>
             </Card>
-            
+
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-neutral-800 mb-4">Dettagli Corso</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -152,7 +150,7 @@ const StudentProfile = () => {
                 </div>
               </div>
             </Card>
-            
+
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-neutral-800 mb-4">Pagamenti</h3>
               <div className="space-y-4">
@@ -172,6 +170,7 @@ const StudentProfile = () => {
                     </p>
                   </div>
                 </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-500">Progresso Pagamenti</span>
@@ -180,8 +179,8 @@ const StudentProfile = () => {
                     </span>
                   </div>
                   <div className="w-full bg-neutral-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full"
+                    <div 
+                      className="bg-gradient-to-r from-accent-500 to-accent-600 h-2 rounded-full" 
                       style={{ width: `${(student.paidAmount / student.totalAmount) * 100}%` }}
                     />
                   </div>
@@ -190,7 +189,7 @@ const StudentProfile = () => {
             </Card>
           </div>
         );
-      
+
       case 'documents':
         return (
           <Card className="p-6">
@@ -229,7 +228,7 @@ const StudentProfile = () => {
             )}
           </Card>
         );
-      
+
       default:
         return (
           <Card className="p-6 text-center">
@@ -261,7 +260,7 @@ const StudentProfile = () => {
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
           <Button 
             variant="outline" 
-            icon={FiIcons.FiMail}
+            icon={FiIcons.FiMail} 
             onClick={() => handleSendEmail(student, 'welcome')}
           >
             Email

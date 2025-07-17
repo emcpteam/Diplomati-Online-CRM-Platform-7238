@@ -1,24 +1,46 @@
 // Email Service Implementation
 import toast from 'react-hot-toast';
 
-// Global default sender configuration
+// Global default sender configuration 
 let defaultSenderConfig = {
   fromName: 'Diplomati Online',
   fromEmail: 'noreply@diplomatonline.it'
 };
 
-// Function to get SMTP config
+// Function to get SMTP config from the Redux state/localStorage
 const getSmtpConfig = () => {
   try {
-    // Get settings from localStorage 
-    const settings = JSON.parse(localStorage.getItem('appState'))?.settings;
-    if (!settings?.integrations?.smtp) {
-      throw new Error('SMTP configuration not found');
+    // Get the current app state from localStorage or context
+    const appStateString = localStorage.getItem('appState');
+    if (!appStateString) {
+      throw new Error('App state not found in localStorage');
     }
-    return settings.integrations.smtp;
+
+    const appState = JSON.parse(appStateString);
+    const smtpSettings = appState?.settings?.integrations?.smtp;
+
+    if (!smtpSettings) {
+      throw new Error('SMTP configuration not found in app state');
+    }
+
+    if (!smtpSettings.active) {
+      throw new Error('SMTP configuration is not active');
+    }
+
+    // Return the SMTP configuration from integrations
+    return {
+      host: smtpSettings.host,
+      port: smtpSettings.port,
+      secure: smtpSettings.secure || false,
+      username: smtpSettings.username,
+      password: smtpSettings.password,
+      fromName: smtpSettings.fromName || defaultSenderConfig.fromName,
+      fromEmail: smtpSettings.fromEmail || smtpSettings.username,
+      active: smtpSettings.active
+    };
   } catch (error) {
     console.error('Error getting SMTP config:', error);
-    throw new Error('SMTP configuration not available. Please configure SMTP in Integrations.');
+    throw new Error('SMTP configuration not available. Please configure SMTP in API Integrations.');
   }
 };
 
@@ -32,15 +54,28 @@ export const setDefaultSender = (name, email) => {
 };
 
 // Main email sending function
-export const sendEmail = async (to, subject, content) => {
-  console.log('🚀 Starting email send process...');
-
+export const sendEmail = async (to, subject, content, options = {}) => {
+  console.log('🚀 Starting email send process...', { to, subject, options });
+  
   try {
-    // Get SMTP config
-    const smtpConfig = getSmtpConfig();
+    // Get SMTP config from integrations settings
+    let smtpConfig;
     
-    if (!smtpConfig || !smtpConfig.active) {
+    if (options.smtp) {
+      console.log('Using provided SMTP config from options');
+      smtpConfig = options.smtp;
+    } else {
+      console.log('Fetching SMTP config from integrations settings');
+      smtpConfig = getSmtpConfig();
+    }
+
+    if (!smtpConfig) {
       throw new Error('SMTP not configured or not active');
+    }
+
+    // Validate required SMTP fields
+    if (!smtpConfig.host || !smtpConfig.port || !smtpConfig.username || !smtpConfig.password) {
+      throw new Error('Incomplete SMTP configuration. Please check all required fields in API Integrations.');
     }
 
     // Prepare email payload
@@ -50,8 +85,8 @@ export const sendEmail = async (to, subject, content) => {
       html: content,
       text: content.replace(/<[^>]*>/g, ''), // Strip HTML for text version
       from: {
-        name: smtpConfig.fromName || defaultSenderConfig.fromName,
-        email: smtpConfig.fromEmail || defaultSenderConfig.fromEmail
+        name: options.fromName || smtpConfig.fromName || defaultSenderConfig.fromName,
+        email: options.fromEmail || smtpConfig.fromEmail || smtpConfig.username
       },
       smtp: {
         host: smtpConfig.host,
@@ -104,7 +139,6 @@ export const sendEmail = async (to, subject, content) => {
     });
 
     return result;
-
   } catch (error) {
     console.error('❌ Email sending failed:', error);
     storeEmailLog({
@@ -126,12 +160,12 @@ const storeEmailLog = (logData) => {
       id: Date.now(),
       ...logData
     });
-
+    
     // Keep only last 50 logs
     if (existingLogs.length > 50) {
       existingLogs.length = 50;
     }
-
+    
     localStorage.setItem('emailLogs', JSON.stringify(existingLogs));
   } catch (error) {
     console.error('Error storing email log:', error);
@@ -165,11 +199,11 @@ const processTemplate = (template, data) => {
 export const emailTemplates = {
   welcome: (student) => {
     const template = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="font-family: Arial,sans-serif;max-width: 600px;margin: 0 auto;padding: 20px;">
         <h1 style="color: #0ea5e9;">Benvenuto in Diplomati Online!</h1>
         <p>Ciao {{firstName}},</p>
         <p>Siamo felici di averti con noi per il corso <strong>{{course}}</strong>.</p>
-        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <div style="background: #f8fafc;padding: 20px;border-radius: 10px;margin: 20px 0;">
           <h2>📚 DETTAGLI ISCRIZIONE:</h2>
           <ul>
             <li>Corso: {{course}}</li>
@@ -194,11 +228,11 @@ export const emailTemplates = {
 
   paymentReminder: (student) => {
     const template = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="font-family: Arial,sans-serif;max-width: 600px;margin: 0 auto;padding: 20px;">
         <h1 style="color: #f59e0b;">💰 Promemoria Pagamento</h1>
         <p>Ciao {{firstName}},</p>
         <p>Ti ricordiamo che hai un pagamento in sospeso per il corso <strong>{{course}}</strong>.</p>
-        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <div style="background: #f8fafc;padding: 20px;border-radius: 10px;margin: 20px 0;">
           <h2>💳 DETTAGLI PAGAMENTO:</h2>
           <ul>
             <li>Importo totale: €{{totalAmount}}</li>

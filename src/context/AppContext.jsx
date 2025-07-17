@@ -1,4 +1,4 @@
-// Update AppContext.jsx to ensure SMTP settings are properly initialized
+// Update AppContext.jsx to ensure SMTP settings are properly initialized and persisted
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const AppContext = createContext();
@@ -55,11 +55,11 @@ const initialState = {
     theme: 'nordic',
     language: 'it',
     emailSettings: {
-      smtpHost: 'smtp.gmail.com',
+      smtpHost: '',
       smtpPort: 587,
-      smtpUser: 'noreply@diplomatonline.it',
+      smtpUser: '',
       smtpPassword: '',
-      fromEmail: 'noreply@diplomatonline.it',
+      fromEmail: '',
       fromName: 'Diplomati Online'
     },
     integrations: {
@@ -95,13 +95,14 @@ const initialState = {
         automaticEvents: true
       },
       smtp: {
-        active: true, // Set to true for development
-        host: 'smtp.gmail.com',
+        active: false, // Set to false initially until user configures
+        host: '',
         port: 587,
         secure: false,
-        username: 'noreply@diplomatonline.it',
-        password: 'password123', // Dummy password for development
-        fromName: 'Diplomati Online'
+        username: '',
+        password: '',
+        fromName: 'Diplomati Online',
+        fromEmail: ''
       }
     }
   }
@@ -117,7 +118,11 @@ function appReducer(state, action) {
     case 'SET_USER':
       return { ...state, user: action.payload, isAuthenticated: true };
     case 'CHECK_AUTH':
-      return { ...state, isAuthenticated: action.payload.isAuthenticated, user: action.payload.user };
+      return { 
+        ...state, 
+        isAuthenticated: action.payload.isAuthenticated, 
+        user: action.payload.user 
+      };
 
     // User Actions
     case 'ADD_USER':
@@ -140,7 +145,7 @@ function appReducer(state, action) {
     case 'SET_SETTINGS':
       return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'UPDATE_INTEGRATION':
-      return {
+      const updatedState = {
         ...state,
         settings: {
           ...state.settings,
@@ -153,6 +158,11 @@ function appReducer(state, action) {
           }
         }
       };
+      
+      // Persist the updated state to localStorage immediately
+      localStorage.setItem('appState', JSON.stringify(updatedState));
+      
+      return updatedState;
 
     // Student Actions
     case 'ADD_STUDENT':
@@ -289,20 +299,58 @@ function appReducer(state, action) {
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Check authentication on app load
+  // Load state from localStorage on mount
   useEffect(() => {
+    try {
+      const savedState = localStorage.getItem('appState');
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        // Merge with initialState to ensure all properties exist
+        const mergedState = {
+          ...initialState,
+          ...parsedState,
+          settings: {
+            ...initialState.settings,
+            ...parsedState.settings,
+            integrations: {
+              ...initialState.settings.integrations,
+              ...parsedState.settings?.integrations
+            }
+          }
+        };
+        
+        // Set the merged state
+        Object.keys(mergedState).forEach(key => {
+          if (key !== 'isAuthenticated' && key !== 'user') {
+            dispatch({ type: 'SET_SETTINGS', payload: mergedState.settings });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading state from localStorage:', error);
+    }
+    
     checkAuthStatus();
   }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('appState', JSON.stringify(state));
+    } catch (error) {
+      console.error('Error saving state to localStorage:', error);
+    }
+  }, [state]);
 
   const checkAuthStatus = () => {
     try {
       const token = localStorage.getItem('authToken');
       const currentUser = localStorage.getItem('currentUser');
-
+      
       if (token && currentUser) {
         const decodedToken = JSON.parse(atob(token));
         const userData = JSON.parse(currentUser);
-
+        
         // Check if token is expired
         if (decodedToken.expires > Date.now()) {
           dispatch({

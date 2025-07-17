@@ -58,7 +58,7 @@ exports.handler = async (event, context) => {
 
     // Test connection
     await transporter.verify();
-
+    
     return {
       statusCode: 200,
       headers: {
@@ -72,6 +72,7 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('SMTP test error:', error);
+    
     return {
       statusCode: 500,
       headers: {

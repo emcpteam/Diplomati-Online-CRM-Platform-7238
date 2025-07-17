@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../utils/SafeIcon';
 import { Card, Button } from '../components/UI';
 import { useApp } from '../context/AppContext';
-import { generatePDF } from '../utils';
+import { generateMonthlyReport, exportToCSV } from '../utils';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
@@ -89,7 +89,6 @@ const Dashboard = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     toast.loading('Aggiornamento dati...', { id: 'refresh' });
-    
     setTimeout(() => {
       setIsRefreshing(false);
       toast.success('Dati aggiornati correttamente!', { id: 'refresh' });
@@ -105,7 +104,7 @@ const Dashboard = () => {
             Dashboard
           </h1>
           <p className="text-neutral-600 mt-2">
-            Panoramica generale del sistema CRM
+            Panoramica del sistema e statistiche
           </p>
         </div>
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
@@ -117,8 +116,32 @@ const Dashboard = () => {
           >
             Aggiorna
           </Button>
-          <Button icon={FiIcons.FiPlus}>
-            Azione Rapida
+          <Button
+            icon={FiIcons.FiDownload}
+            onClick={() => {
+              generateMonthlyReport({
+                totalStudents: state.students.length,
+                activeStudents: state.students.filter(s => s.status === 'active').length,
+                newLeads: state.leads.filter(l => l.status === 'new').length,
+                monthlyRevenue: state.students.reduce((sum, s) => sum + s.paidAmount, 0),
+                totalRevenue: state.students.reduce((sum, s) => sum + s.totalAmount, 0),
+                topCourses: state.courses.map(c => ({
+                  name: c.name,
+                  enrollments: state.students.filter(s => s.course === c.name).length
+                })),
+                leadStats: {
+                  total: state.leads.length,
+                  converted: state.leads.filter(l => l.status === 'converted').length,
+                  conversionRate: state.leads.length > 0
+                    ? (state.leads.filter(l => l.status === 'converted').length / state.leads.length) * 100
+                    : 0
+                },
+                pendingPayments: state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0)
+              });
+              toast.success('Report mensile generato!');
+            }}
+          >
+            Report
           </Button>
         </div>
       </div>
@@ -132,136 +155,80 @@ const Dashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-neutral-500 mb-1">{stat.title}</p>
-                  <p className="text-2xl font-bold text-neutral-800">
-                    {stat.value}
-                    {stat.total !== stat.value && (
-                      <span className="text-sm text-neutral-500 font-normal">
-                        /{stat.total}
-                      </span>
-                    )}
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <span className={`text-sm font-medium ${
-                      stat.changeType === 'positive' ? 'text-accent-600' : 'text-red-600'
-                    }`}>
-                      {stat.change}
-                    </span>
-                    <span className="text-xs text-neutral-500 ml-1">
-                      questo mese
-                    </span>
-                  </div>
-                </div>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+            <Card className="p-6 hover:shadow-medium transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center`}>
                   <SafeIcon icon={stat.icon} className="w-6 h-6 text-white" />
                 </div>
+                <div className={`text-xs font-medium px-2 py-1 rounded-full ${
+                  stat.changeType === 'positive'
+                    ? 'bg-accent-100 text-accent-700'
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {stat.change}
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-neutral-800">{stat.value}</h3>
+              <p className="text-sm text-neutral-500 mt-1">{stat.title}</p>
+              <div className="mt-3 pt-3 border-t border-neutral-200 flex items-center justify-between">
+                <span className="text-xs text-neutral-500">Totale: {stat.total}</span>
+                <span className="text-xs text-primary-600 font-medium">
+                  {Math.round((stat.value / (stat.total || 1)) * 100)}%
+                </span>
               </div>
             </Card>
           </motion.div>
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Recent Activities */}
-        <div className="xl:col-span-2">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-neutral-800">
-                Attività Recenti
-              </h3>
-              <Link to="/activities">
-                <Button variant="ghost" size="sm">
-                  Vedi tutto
-                </Button>
-              </Link>
-            </div>
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <motion.div
-                  key={activity.id}
-                  whileHover={{ x: 4 }}
-                  className="flex items-start space-x-4 p-4 rounded-xl hover:bg-neutral-50 transition-colors"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-lg flex items-center justify-center">
-                    <SafeIcon icon={activity.icon} className="w-5 h-5 text-primary-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-neutral-800">{activity.title}</h4>
-                    <p className="text-sm text-neutral-600 mt-1">{activity.description}</p>
-                    <p className="text-xs text-neutral-500 mt-2">{activity.time}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-neutral-800 mb-6">
-              Azioni Rapide
-            </h3>
-            <div className="space-y-3">
-              {[
-                { title: 'Aggiungi Studente', icon: FiIcons.FiUserPlus, path: '/students' },
-                { title: 'Gestisci Lead', icon: FiIcons.FiTarget, path: '/leads' },
-                { title: 'Nuova Scuola', icon: FiIcons.FiMapPin, path: '/schools' },
-                { title: 'Crea Corso', icon: FiIcons.FiBookOpen, path: '/courses' },
-              ].map((action) => (
-                <Link key={action.title} to={action.path}>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center space-x-3 p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"
-                  >
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                      <SafeIcon icon={action.icon} className="w-5 h-5 text-primary-600" />
-                    </div>
-                    <span className="font-medium text-neutral-800">{action.title}</span>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Quick Stats Banner */}
+      {/* Activity Feed */}
       <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <p className="text-2xl font-bold text-primary-600">
-              €{state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
-            </p>
-            <p className="text-sm text-neutral-500">Fatturato Mese</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-secondary-600">
-              {state.leads.filter(l => {
-                const today = new Date();
-                const leadDate = new Date(l.createdAt);
-                return leadDate.getMonth() === today.getMonth();
-              }).length}
-            </p>
-            <p className="text-sm text-neutral-500">Lead Questo Mese</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-accent-600">
-              {state.students.filter(s => s.status === 'active').length}
-            </p>
-            <p className="text-sm text-neutral-500">Studenti Attivi</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-orange-600">
-              {((state.leads.filter(l => l.status === 'converted').length / Math.max(state.leads.length, 1)) * 100).toFixed(1)}%
-            </p>
-            <p className="text-sm text-neutral-500">Tasso Conversione</p>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-neutral-800">
+            Attività Recenti
+          </h2>
+          <Button variant="ghost" size="sm" icon={FiIcons.FiMoreHorizontal} />
+        </div>
+        <div className="space-y-6">
+          {recentActivities.map((activity, index) => (
+            <motion.div
+              key={activity.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-start space-x-4"
+            >
+              <div className={`w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center ${
+                activity.type === 'student'
+                  ? 'bg-primary-100'
+                  : activity.type === 'lead'
+                  ? 'bg-secondary-100'
+                  : activity.type === 'payment'
+                  ? 'bg-accent-100'
+                  : 'bg-orange-100'
+              }`}>
+                <SafeIcon
+                  icon={activity.icon}
+                  className={`w-5 h-5 ${
+                    activity.type === 'student'
+                      ? 'text-primary-600'
+                      : activity.type === 'lead'
+                      ? 'text-secondary-600'
+                      : activity.type === 'payment'
+                      ? 'text-accent-600'
+                      : 'text-orange-600'
+                  }`}
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-neutral-800">{activity.title}</p>
+                  <span className="text-xs text-neutral-500">{activity.time}</span>
+                </div>
+                <p className="text-sm text-neutral-600 mt-1">{activity.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </Card>
     </div>

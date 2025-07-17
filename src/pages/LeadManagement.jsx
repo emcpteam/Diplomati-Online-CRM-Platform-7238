@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import { useApp } from '../context/AppContext';
-import { sendEmail, emailTemplates } from '../utils/emailService';
+import { sendEmail, emailTemplates } from '../utils';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -40,7 +40,7 @@ const LeadManagement = () => {
         emailData.content,
         { smtp: smtpSettings }
       );
-      
+
       // Update lead record with communication
       const updatedLead = {
         ...lead,
@@ -56,8 +56,8 @@ const LeadManagement = () => {
         ],
         lastContact: new Date().toISOString()
       };
-      
       dispatch({ type: 'UPDATE_LEAD', payload: updatedLead });
+      
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
       console.error('Email error:', error);
@@ -68,8 +68,8 @@ const LeadManagement = () => {
   // Filter leads based on search term and status filter
   const filteredLeads = state.leads ? state.leads.filter(lead => {
     const matchesSearch = lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+                          lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          lead.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || lead.status === filterStatus;
     return matchesSearch && matchesStatus;
   }) : [];
@@ -89,14 +89,12 @@ const LeadManagement = () => {
         <div className="flex items-center space-x-3 mt-4 md:mt-0">
           <Button 
             variant="outline" 
-            icon={FiIcons.FiDownload}
+            icon={FiIcons.FiDownload} 
             onClick={() => toast.success('Export completato!')}
           >
             Esporta
           </Button>
-          <Button icon={FiIcons.FiPlus}>
-            Nuovo Lead
-          </Button>
+          <Button icon={FiIcons.FiPlus}>Nuovo Lead</Button>
         </div>
       </div>
 
@@ -111,9 +109,9 @@ const LeadManagement = () => {
               icon={FiIcons.FiSearch} 
             />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+          <select 
+            value={filterStatus} 
+            onChange={(e) => setFilterStatus(e.target.value)} 
             className="px-4 py-3 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">Tutti gli stati</option>
@@ -150,25 +148,23 @@ const LeadManagement = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge
+                  <Badge 
                     variant={
-                      lead.status === 'new' ? 'primary' :
-                      lead.status === 'contacted' ? 'secondary' :
-                      lead.status === 'qualified' ? 'success' :
-                      lead.status === 'converted' ? 'accent' :
-                      'warning'
+                      lead.status === 'new' ? 'primary' : 
+                      lead.status === 'contacted' ? 'secondary' : 
+                      lead.status === 'qualified' ? 'success' : 
+                      lead.status === 'converted' ? 'accent' : 'warning'
                     }
                   >
-                    {lead.status === 'new' ? 'Nuovo' :
-                     lead.status === 'contacted' ? 'Contattato' :
-                     lead.status === 'qualified' ? 'Qualificato' :
-                     lead.status === 'converted' ? 'Convertito' :
-                     'Perso'}
+                    {lead.status === 'new' ? 'Nuovo' : 
+                     lead.status === 'contacted' ? 'Contattato' : 
+                     lead.status === 'qualified' ? 'Qualificato' : 
+                     lead.status === 'converted' ? 'Convertito' : 'Perso'}
                   </Badge>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    icon={FiIcons.FiMail}
+                    icon={FiIcons.FiMail} 
                     onClick={() => handleSendEmail(lead, 'welcome')}
                   >
                     Email
