@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
-import SafeIcon from '../common/SafeIcon';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Badge from './ui/Badge';
+import SafeIcon from '../utils/SafeIcon';
+import { Button, Input, Badge } from './UI';
 import { uploadFile, validateFile } from '../utils';
 import toast from 'react-hot-toast';
 
@@ -20,6 +18,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
       uploadedAt: '2024-01-20'
     }
   ]);
+
   const [selectedItems, setSelectedItems] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -34,6 +33,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
 
   const handleFileSelect = async (files) => {
     if (!files || files.length === 0) return;
+
     setUploading(true);
     toast.loading('Caricamento file in corso...', { id: 'upload' });
 
@@ -46,6 +46,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
         }
 
         const uploadResult = await uploadFile(file, 'media');
+        
         const newItem = {
           id: Date.now() + Math.random(),
           name: file.name.split('.')[0],
@@ -55,8 +56,10 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
           format: file.name.split('.').pop().toUpperCase(),
           uploadedAt: new Date().toISOString().split('T')[0]
         };
+
         setMediaItems(prev => [newItem, ...prev]);
       }
+
       toast.success('File caricati con successo!', { id: 'upload' });
     } catch (error) {
       toast.error('Errore durante il caricamento', { id: 'upload' });
@@ -87,8 +90,8 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
   const handleItemToggle = (item) => {
     if (multiple) {
       setSelectedItems(prev => 
-        prev.find(i => i.id === item.id) 
-          ? prev.filter(i => i.id !== item.id) 
+        prev.find(i => i.id === item.id)
+          ? prev.filter(i => i.id !== item.id)
           : [...prev, item]
       );
     } else {
@@ -101,6 +104,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
       toast.error('Seleziona almeno un elemento');
       return;
     }
+
     onSelect(multiple ? selectedItems : selectedItems[0]);
     onClose();
   };
@@ -108,17 +112,17 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
   if (!isOpen) return null;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }} 
-        animate={{ scale: 1, opacity: 1 }} 
-        exit={{ scale: 0.9, opacity: 0 }} 
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         className="bg-white rounded-2xl shadow-strong max-w-6xl w-full max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -137,16 +141,17 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
         <div className="p-6 border-b border-neutral-200">
           <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4">
-              <Input 
-                placeholder="Cerca file..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                icon={FiIcons.FiSearch} 
-                className="w-64" 
+              <Input
+                placeholder="Cerca file..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                icon={FiIcons.FiSearch}
+                className="w-64"
               />
-              <select 
-                value={filterType} 
-                onChange={(e) => setFilterType(e.target.value)} 
+              
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
                 className="px-4 py-2 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">Tutti i tipi</option>
@@ -154,19 +159,21 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
                 <option value="document">Documenti</option>
               </select>
             </div>
+
             <div className="flex items-center space-x-3">
               {selectedItems.length > 0 && (
                 <Badge variant="primary">
                   {selectedItems.length} selezionati
                 </Badge>
               )}
-              <input 
-                type="file" 
-                multiple 
-                accept={allowedTypes.join(',')} 
-                onChange={(e) => handleFileSelect(e.target.files)} 
-                className="hidden" 
-                id="file-upload" 
+              
+              <input
+                type="file"
+                multiple
+                accept={allowedTypes.join(',')}
+                onChange={(e) => handleFileSelect(e.target.files)}
+                className="hidden"
+                id="file-upload"
               />
               <label htmlFor="file-upload">
                 <Button as="span" variant="outline" icon={FiIcons.FiUpload} loading={uploading}>
@@ -214,12 +221,16 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
                   {/* Preview */}
                   <div className="aspect-square bg-neutral-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
                     {item.type === 'image' ? (
-                      <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                      <img
+                        src={item.url}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <SafeIcon icon={FiIcons.FiFile} className="w-8 h-8 text-neutral-400" />
                     )}
                   </div>
-                  
+
                   {/* Info */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-neutral-800 truncate">{item.name}</p>
@@ -228,7 +239,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
                       <span>{item.size}</span>
                     </div>
                   </div>
-                  
+
                   {/* Selection indicator */}
                   {selectedItems.find(i => i.id === item.id) && (
                     <div className="absolute top-1 right-1 w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center">
@@ -245,7 +256,7 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
             </div>
           )}
         </div>
-        
+
         {/* Footer */}
         <div className="p-6 border-t border-neutral-200">
           <div className="flex items-center justify-between">
@@ -256,9 +267,9 @@ const MediaGallery = ({ isOpen, onClose, onSelect, allowedTypes = ['image/*'], m
               <Button variant="outline" onClick={onClose}>
                 Annulla
               </Button>
-              <Button 
-                icon={FiIcons.FiCheck} 
-                onClick={handleSelect} 
+              <Button
+                icon={FiIcons.FiCheck}
+                onClick={handleSelect}
                 disabled={selectedItems.length === 0}
               >
                 Seleziona ({selectedItems.length})

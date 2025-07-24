@@ -3,11 +3,14 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import * as LuIcons from 'react-icons/lu';
-import SafeIcon from '../common/SafeIcon';
+import SafeIcon from '../utils/SafeIcon';
+import { Button, Input } from './UI';
+import { useApp } from '../context/AppContext';
 
 // Sidebar Component
 export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
+  
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: FiIcons.FiHome },
     { name: 'Studenti', path: '/students', icon: FiIcons.FiUsers },
@@ -15,11 +18,12 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'Corsi', path: '/courses', icon: FiIcons.FiBookOpen },
     { name: 'Lead', path: '/leads', icon: FiIcons.FiTarget },
     { name: 'Template', path: '/templates', icon: FiIcons.FiFileText },
+    { name: 'Fatturazione', path: '/invoicing', icon: FiIcons.FiFileText },
     { name: 'Azienda', path: '/company', icon: FiIcons.FiSettings },
     { name: 'Integrazioni', path: '/integrations', icon: FiIcons.FiLink },
     { name: 'Utenti', path: '/users', icon: FiIcons.FiUserCheck },
     { name: 'Strumenti', path: '/tools', icon: FiIcons.FiTool },
-    { name: 'Analytics', path: '/analytics', icon: FiIcons.FiBarChart2 },
+    { name: 'Analytics', path: '/analytics', icon: FiIcons.FiBarChart3 },
   ];
 
   return (
@@ -49,7 +53,10 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center px-6 py-8 border-b border-neutral-200/50">
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-3"
+            >
               <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center shadow-medium">
                 <SafeIcon icon={LuIcons.LuGraduationCap} className="w-6 h-6 text-white" />
               </div>
@@ -87,7 +94,9 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       <SafeIcon
                         icon={item.icon}
                         className={`w-5 h-5 transition-colors ${
-                          isActive ? 'text-white' : 'text-neutral-500 group-hover:text-neutral-700'
+                          isActive
+                            ? 'text-white'
+                            : 'text-neutral-500 group-hover:text-neutral-700'
                         }`}
                       />
                       <span className="font-medium">{item.name}</span>
@@ -120,91 +129,69 @@ export const Header = ({ setSidebarOpen }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showQuickActions, setShowQuickActions] = useState(false);
 
-  // Import useApp at the top of the file
-  function useApp() {
-    return {
-      state: {
-        user: {
-          name: 'Emanuele Marchiori',
-          email: 'emanuele@copilots.it',
-          role: 'Super Admin'
-        },
-        notifications: [],
-        students: [],
-        leads: [],
-        schools: [],
-        courses: []
-      },
-      logout: () => console.log('Logout')
-    };
-  }
-
   const handleGlobalSearch = (term) => {
     if (!term.trim()) return [];
+
     const results = [];
 
     // Search students
     state.students.forEach(student => {
-      if (
-        student.firstName.toLowerCase().includes(term.toLowerCase()) || 
-        student.lastName.toLowerCase().includes(term.toLowerCase()) || 
-        student.email.toLowerCase().includes(term.toLowerCase())
-      ) {
+      if (student.firstName.toLowerCase().includes(term.toLowerCase()) ||
+          student.lastName.toLowerCase().includes(term.toLowerCase()) ||
+          student.email.toLowerCase().includes(term.toLowerCase())) {
         results.push({
           type: 'student',
           id: student.id,
           title: `${student.firstName} ${student.lastName}`,
           subtitle: student.email,
-          link: `/students/${student.id}`
-        });
-      }
-    });
-
-    // Search leads
-    state.leads.forEach(lead => {
-      if (
-        lead.firstName.toLowerCase().includes(term.toLowerCase()) || 
-        lead.lastName.toLowerCase().includes(term.toLowerCase()) || 
-        lead.email.toLowerCase().includes(term.toLowerCase())
-      ) {
-        results.push({
-          type: 'lead',
-          id: lead.id,
-          title: `${lead.firstName} ${lead.lastName}`,
-          subtitle: `Lead - ${lead.studyPlan}`,
-          link: '/leads'
+          link: `/students/${student.id}`,
+          icon: FiIcons.FiUser
         });
       }
     });
 
     // Search schools
     state.schools.forEach(school => {
-      if (
-        school.name.toLowerCase().includes(term.toLowerCase()) || 
-        school.address.toLowerCase().includes(term.toLowerCase())
-      ) {
+      if (school.name.toLowerCase().includes(term.toLowerCase()) ||
+          school.address.toLowerCase().includes(term.toLowerCase())) {
         results.push({
           type: 'school',
           id: school.id,
           title: school.name,
           subtitle: school.address,
-          link: '/schools'
+          link: '/schools',
+          icon: FiIcons.FiMapPin
         });
       }
     });
 
     // Search courses
     state.courses.forEach(course => {
-      if (
-        course.name.toLowerCase().includes(term.toLowerCase()) || 
-        course.type.toLowerCase().includes(term.toLowerCase())
-      ) {
+      if (course.name.toLowerCase().includes(term.toLowerCase()) ||
+          course.type.toLowerCase().includes(term.toLowerCase())) {
         results.push({
           type: 'course',
           id: course.id,
           title: course.name,
           subtitle: course.type,
-          link: '/courses'
+          link: '/courses',
+          icon: FiIcons.FiBookOpen
+        });
+      }
+    });
+
+    // Search leads
+    state.leads.forEach(lead => {
+      if (lead.firstName.toLowerCase().includes(term.toLowerCase()) ||
+          lead.lastName.toLowerCase().includes(term.toLowerCase()) ||
+          lead.email.toLowerCase().includes(term.toLowerCase())) {
+        results.push({
+          type: 'lead',
+          id: lead.id,
+          title: `${lead.firstName} ${lead.lastName}`,
+          subtitle: `Lead - ${lead.studyPlan}`,
+          link: '/leads',
+          icon: FiIcons.FiTarget
         });
       }
     });
@@ -214,32 +201,97 @@ export const Header = ({ setSidebarOpen }) => {
 
   const searchResults = searchTerm.length > 2 ? handleGlobalSearch(searchTerm) : [];
 
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'student': return FiIcons.FiUser;
-      case 'lead': return FiIcons.FiTarget;
-      case 'school': return FiIcons.FiMapPin;
-      case 'course': return FiIcons.FiBookOpen;
-      default: return FiIcons.FiFile;
-    }
-  };
-
   const handleLogout = () => {
-    // In a real app, this would clear authentication tokens
     logout();
     window.location.href = '/login';
   };
 
   const QuickActionsModal = () => {
     const quickActions = [
-      { title: 'Aggiungi Studente', icon: FiIcons.FiUserPlus, color: 'from-blue-500 to-blue-600', action: () => window.location.hash = '/students' },
-      { title: 'Nuovo Lead', icon: FiIcons.FiTarget, color: 'from-green-500 to-green-600', action: () => window.location.hash = '/leads' },
-      { title: 'Aggiungi Scuola', icon: FiIcons.FiMapPin, color: 'from-purple-500 to-purple-600', action: () => window.location.hash = '/schools' },
-      { title: 'Crea Corso', icon: FiIcons.FiBookOpen, color: 'from-orange-500 to-orange-600', action: () => window.location.hash = '/courses' },
-      { title: 'Genera Report', icon: FiIcons.FiFileText, color: 'from-red-500 to-red-600', action: () => window.location.hash = '/analytics' },
-      { title: 'Invia Email Massiva', icon: FiIcons.FiMail, color: 'from-indigo-500 to-indigo-600', action: () => console.log('Email massiva') },
-      { title: 'Backup Dati', icon: FiIcons.FiDatabase, color: 'from-gray-500 to-gray-600', action: () => console.log('Backup') },
-      { title: 'Sincronizza Lead', icon: FiIcons.FiRefreshCw, color: 'from-teal-500 to-teal-600', action: () => window.location.hash = '/leads' }
+      {
+        title: 'Aggiungi Studente',
+        description: 'Iscrivi un nuovo studente',
+        icon: FiIcons.FiUserPlus,
+        color: 'from-blue-500 to-blue-600',
+        action: () => window.location.hash = '/students'
+      },
+      {
+        title: 'Nuovo Lead',
+        description: 'Gestisci nuovi contatti',
+        icon: FiIcons.FiTarget,
+        color: 'from-green-500 to-green-600',
+        action: () => window.location.hash = '/leads'
+      },
+      {
+        title: 'Aggiungi Scuola',
+        description: 'Partner per esami',
+        icon: FiIcons.FiMapPin,
+        color: 'from-purple-500 to-purple-600',
+        action: () => window.location.hash = '/schools'
+      },
+      {
+        title: 'Crea Corso',
+        description: 'Nuovo corso di studi',
+        icon: FiIcons.FiBookOpen,
+        color: 'from-orange-500 to-orange-600',
+        action: () => window.location.hash = '/courses'
+      },
+      {
+        title: 'Genera Report',
+        description: 'Analytics e statistiche',
+        icon: FiIcons.FiFileText,
+        color: 'from-red-500 to-red-600',
+        action: () => window.location.hash = '/analytics'
+      },
+      {
+        title: 'Email Massiva',
+        description: 'Comunicazioni bulk',
+        icon: FiIcons.FiMail,
+        color: 'from-indigo-500 to-indigo-600',
+        action: () => console.log('Email massiva')
+      },
+      {
+        title: 'Backup Dati',
+        description: 'Esporta tutti i dati',
+        icon: FiIcons.FiDatabase,
+        color: 'from-gray-500 to-gray-600',
+        action: () => console.log('Backup')
+      },
+      {
+        title: 'Sincronizza Lead',
+        description: 'Aggiorna da fonti esterne',
+        icon: FiIcons.FiRefreshCw,
+        color: 'from-teal-500 to-teal-600',
+        action: () => window.location.hash = '/leads'
+      },
+      {
+        title: 'Template Manager',
+        description: 'Gestisci template',
+        icon: FiIcons.FiEdit3,
+        color: 'from-pink-500 to-pink-600',
+        action: () => window.location.hash = '/templates'
+      },
+      {
+        title: 'Integrazioni',
+        description: 'Configura API esterne',
+        icon: FiIcons.FiLink,
+        color: 'from-yellow-500 to-yellow-600',
+        action: () => window.location.hash = '/integrations'
+      },
+      {
+        title: 'Strumenti Sviluppo',
+        description: 'Tools per sviluppatori',
+        icon: FiIcons.FiTool,
+        color: 'from-cyan-500 to-cyan-600',
+        action: () => window.location.hash = '/tools'
+      },
+      {
+        title: 'Impostazioni Azienda',
+        description: 'Configura dati aziendali',
+        icon: FiIcons.FiSettings,
+        color: 'from-violet-500 to-violet-600',
+        action: () => window.location.hash = '/company'
+      }
     ];
 
     return (
@@ -254,93 +306,44 @@ export const Header = ({ setSidebarOpen }) => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-2xl shadow-strong max-w-2xl w-full"
+          className="bg-white rounded-3xl shadow-strong max-w-5xl w-full max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-6 border-b border-neutral-200">
+          <div className="p-8 border-b border-neutral-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-neutral-800">Azioni Rapide</h2>
+              <div>
+                <h2 className="text-3xl font-bold text-neutral-800">Azioni Rapide</h2>
+                <p className="text-neutral-600 mt-2">Accesso veloce alle funzioni principali del CRM</p>
+              </div>
               <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowQuickActions(false)} />
             </div>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {quickActions.map((action, index) => (
                 <motion.button
                   key={action.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.05 }}
                   onClick={() => {
                     action.action();
                     setShowQuickActions(false);
                   }}
-                  className="p-4 bg-white border-2 border-neutral-200 rounded-xl hover:border-primary-500 hover:shadow-medium transition-all group"
+                  className="p-6 bg-white border-2 border-neutral-200 rounded-2xl hover:border-primary-500 hover:shadow-medium transition-all group text-left"
                 >
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}
-                  >
-                    <SafeIcon icon={action.icon} className="w-6 h-6 text-white" />
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <SafeIcon icon={action.icon} className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-sm font-medium text-neutral-800 text-center">{action.title}</p>
+                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">{action.title}</h3>
+                  <p className="text-sm text-neutral-600">{action.description}</p>
                 </motion.button>
               ))}
             </div>
           </div>
         </motion.div>
       </motion.div>
-    );
-  };
-
-  // For Button component
-  const Button = ({ children, variant = 'primary', size = 'md', icon, iconPosition = 'left', loading = false, disabled = false, className = '', ...props }) => {
-    return (
-      <button 
-        className={`inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${className}`}
-        disabled={disabled || loading}
-        {...props}
-      >
-        {loading ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        ) : (
-          <>
-            {icon && iconPosition === 'left' && (
-              <SafeIcon icon={icon} className="w-4 h-4 mr-2" />
-            )}
-            {children}
-            {icon && iconPosition === 'right' && (
-              <SafeIcon icon={icon} className="w-4 h-4 ml-2" />
-            )}
-          </>
-        )}
-      </button>
-    );
-  };
-
-  // For Input component
-  const Input = ({ label, error, icon, className = '', containerClassName = '', ...props }) => {
-    return (
-      <div className={`space-y-2 ${containerClassName}`}>
-        {label && (
-          <label className="block text-sm font-medium text-neutral-700">
-            {label}
-          </label>
-        )}
-        <div className="relative">
-          {icon && (
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <SafeIcon icon={icon} className="w-5 h-5 text-neutral-400" />
-            </div>
-          )}
-          <input
-            className={`w-full px-4 py-3 ${icon ? 'pl-12' : ''} bg-white border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
-            {...props}
-          />
-        </div>
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
-      </div>
     );
   };
 
@@ -357,60 +360,24 @@ export const Header = ({ setSidebarOpen }) => {
           >
             <SafeIcon icon={FiIcons.FiMenu} className="w-6 h-6 text-neutral-600" />
           </motion.button>
+
           <div>
             <h2 className="text-lg font-display font-semibold text-neutral-800">
-              Benvenuto, {state.user.name}
+              Benvenuto, {state.user?.name}
             </h2>
             <p className="text-sm text-neutral-500">
-              {new Date().toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString('it-IT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </p>
           </div>
         </div>
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
-          {/* Notifications */}
-          <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 rounded-lg hover:bg-neutral-100 transition-colors relative"
-            >
-              <SafeIcon icon={FiIcons.FiBell} className="w-6 h-6 text-neutral-600" />
-              {state.notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {state.notifications.length}
-                </span>
-              )}
-            </motion.button>
-            {showNotifications && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="absolute right-0 top-12 w-80 bg-white rounded-xl shadow-strong border border-neutral-200 py-4 z-50"
-              >
-                <div className="px-4 pb-2 border-b border-neutral-200">
-                  <h3 className="font-medium text-neutral-800">Notifiche</h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  {state.notifications.length === 0 ? (
-                    <p className="text-sm text-neutral-500 text-center py-8">
-                      Nessuna notifica
-                    </p>
-                  ) : (
-                    state.notifications.map((notification) => (
-                      <div key={notification.id} className="px-4 py-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0">
-                        <p className="text-sm text-neutral-800">{notification.message}</p>
-                        <p className="text-xs text-neutral-500 mt-1">{notification.time}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
           {/* Search */}
           <div className="relative">
             <motion.button
@@ -421,6 +388,7 @@ export const Header = ({ setSidebarOpen }) => {
             >
               <SafeIcon icon={FiIcons.FiSearch} className="w-6 h-6 text-neutral-600" />
             </motion.button>
+
             <AnimatePresence>
               {showSearch && (
                 <motion.div
@@ -435,8 +403,10 @@ export const Header = ({ setSidebarOpen }) => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       icon={FiIcons.FiSearch}
+                      autoFocus
                     />
                   </div>
+
                   {searchResults.length > 0 && (
                     <div className="border-t border-neutral-200 max-h-64 overflow-y-auto">
                       {searchResults.map((result) => (
@@ -448,7 +418,7 @@ export const Header = ({ setSidebarOpen }) => {
                           whileHover={{ x: 4 }}
                         >
                           <div className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
-                            <SafeIcon icon={getTypeIcon(result.type)} className="w-4 h-4 text-neutral-600" />
+                            <SafeIcon icon={result.icon} className="w-4 h-4 text-neutral-600" />
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-medium text-neutral-800">{result.title}</p>
@@ -458,6 +428,7 @@ export const Header = ({ setSidebarOpen }) => {
                       ))}
                     </div>
                   )}
+
                   {searchTerm.length > 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center">
                       <p className="text-sm text-neutral-500">Nessun risultato trovato</p>
@@ -487,15 +458,16 @@ export const Header = ({ setSidebarOpen }) => {
             >
               <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-medium text-sm">
-                  {state.user.name.split(' ').map(n => n[0]).join('')}
+                  {state.user?.name.split(' ').map(n => n[0]).join('')}
                 </span>
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-neutral-800">{state.user.name}</p>
-                <p className="text-xs text-neutral-500">{state.user.role}</p>
+                <p className="text-sm font-medium text-neutral-800">{state.user?.name}</p>
+                <p className="text-xs text-neutral-500">{state.user?.role}</p>
               </div>
               <SafeIcon icon={FiIcons.FiChevronDown} className="w-4 h-4 text-neutral-500" />
             </motion.div>
+
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
@@ -505,9 +477,10 @@ export const Header = ({ setSidebarOpen }) => {
                   className="absolute right-0 top-12 w-64 bg-white rounded-xl shadow-strong border border-neutral-200 py-2 z-50"
                 >
                   <div className="px-4 py-3 border-b border-neutral-200">
-                    <p className="font-medium text-neutral-800">{state.user.name}</p>
-                    <p className="text-sm text-neutral-500">{state.user.email}</p>
+                    <p className="font-medium text-neutral-800">{state.user?.name}</p>
+                    <p className="text-sm text-neutral-500">{state.user?.email}</p>
                   </div>
+                  
                   <div className="py-2">
                     <button
                       onClick={() => window.location.hash = '/company'}
@@ -516,13 +489,7 @@ export const Header = ({ setSidebarOpen }) => {
                       <SafeIcon icon={FiIcons.FiUser} className="w-4 h-4 text-neutral-500" />
                       <span className="text-sm text-neutral-700">Profilo</span>
                     </button>
-                    <button
-                      onClick={() => window.location.hash = '/integrations'}
-                      className="w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-neutral-50 transition-colors"
-                    >
-                      <SafeIcon icon={FiIcons.FiSettings} className="w-4 h-4 text-neutral-500" />
-                      <span className="text-sm text-neutral-700">Impostazioni</span>
-                    </button>
+                    
                     <div className="border-t border-neutral-200 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
@@ -572,6 +539,7 @@ export const Footer = () => {
             <span>SDI: ABCDEFG</span>
           </div>
         </div>
+
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center space-x-2 text-neutral-500">
             <span>Sviluppato da Emanuele Marchiori</span>
@@ -580,33 +548,9 @@ export const Footer = () => {
             <span>•</span>
             <span>{buildDate}</span>
           </div>
-          {/* Environment Indicator */}
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></div>
             <span className="text-xs text-accent-600 font-medium">PROD</span>
-          </div>
-        </div>
-      </motion.div>
-      
-      {/* Version Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mt-2 pt-2 border-t border-neutral-200/50"
-      >
-        <div className="flex flex-col md:flex-row items-center justify-between text-xs text-neutral-400">
-          <div className="flex items-center space-x-4">
-            <span>Sistema CRM completo per la gestione studenti</span>
-            <span>•</span>
-            <span>Database: PostgreSQL</span>
-            <span>•</span>
-            <span>Framework: React + Vite</span>
-          </div>
-          <div className="flex items-center space-x-2 mt-1 md:mt-0">
-            <span>Build: {Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
-            <span>•</span>
-            <span>Node: 18.x</span>
           </div>
         </div>
       </motion.div>

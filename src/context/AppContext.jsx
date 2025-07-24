@@ -1,4 +1,3 @@
-// Update AppContext.jsx to ensure SMTP settings are properly initialized and persisted
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const AppContext = createContext();
@@ -12,7 +11,7 @@ const initialState = {
     avatar: null,
     permissions: ['all']
   },
-  isAuthenticated: true, // Setting this to true by default to skip login screen for development
+  isAuthenticated: false,
   company: {
     name: 'Diplomati Online',
     logo: null,
@@ -55,11 +54,11 @@ const initialState = {
     theme: 'nordic',
     language: 'it',
     emailSettings: {
-      smtpHost: '',
+      smtpHost: 'smtp.gmail.com',
       smtpPort: 587,
-      smtpUser: '',
+      smtpUser: 'noreply@diplomatonline.it',
       smtpPassword: '',
-      fromEmail: '',
+      fromEmail: 'noreply@diplomatonline.it',
       fromName: 'Diplomati Online'
     },
     integrations: {
@@ -95,14 +94,11 @@ const initialState = {
         automaticEvents: true
       },
       smtp: {
-        active: false, // Set to false initially until user configures
-        host: '',
+        active: false,
+        host: 'smtp.gmail.com',
         port: 587,
         secure: false,
-        username: '',
-        password: '',
-        fromName: 'Diplomati Online',
-        fromEmail: ''
+        username: 'noreply@diplomatonline.it'
       }
     }
   }
@@ -118,10 +114,10 @@ function appReducer(state, action) {
     case 'SET_USER':
       return { ...state, user: action.payload, isAuthenticated: true };
     case 'CHECK_AUTH':
-      return { 
-        ...state, 
-        isAuthenticated: action.payload.isAuthenticated, 
-        user: action.payload.user 
+      return {
+        ...state,
+        isAuthenticated: action.payload.isAuthenticated,
+        user: action.payload.user
       };
 
     // User Actions
@@ -145,7 +141,7 @@ function appReducer(state, action) {
     case 'SET_SETTINGS':
       return { ...state, settings: { ...state.settings, ...action.payload } };
     case 'UPDATE_INTEGRATION':
-      const updatedState = {
+      return {
         ...state,
         settings: {
           ...state.settings,
@@ -158,11 +154,6 @@ function appReducer(state, action) {
           }
         }
       };
-      
-      // Persist the updated state to localStorage immediately
-      localStorage.setItem('appState', JSON.stringify(updatedState));
-      
-      return updatedState;
 
     // Student Actions
     case 'ADD_STUDENT':
@@ -299,58 +290,20 @@ function appReducer(state, action) {
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Load state from localStorage on mount
+  // Check authentication on app load
   useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('appState');
-      if (savedState) {
-        const parsedState = JSON.parse(savedState);
-        // Merge with initialState to ensure all properties exist
-        const mergedState = {
-          ...initialState,
-          ...parsedState,
-          settings: {
-            ...initialState.settings,
-            ...parsedState.settings,
-            integrations: {
-              ...initialState.settings.integrations,
-              ...parsedState.settings?.integrations
-            }
-          }
-        };
-        
-        // Set the merged state
-        Object.keys(mergedState).forEach(key => {
-          if (key !== 'isAuthenticated' && key !== 'user') {
-            dispatch({ type: 'SET_SETTINGS', payload: mergedState.settings });
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error loading state from localStorage:', error);
-    }
-    
     checkAuthStatus();
   }, []);
-
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('appState', JSON.stringify(state));
-    } catch (error) {
-      console.error('Error saving state to localStorage:', error);
-    }
-  }, [state]);
 
   const checkAuthStatus = () => {
     try {
       const token = localStorage.getItem('authToken');
       const currentUser = localStorage.getItem('currentUser');
-      
+
       if (token && currentUser) {
         const decodedToken = JSON.parse(atob(token));
         const userData = JSON.parse(currentUser);
-        
+
         // Check if token is expired
         if (decodedToken.expires > Date.now()) {
           dispatch({
@@ -364,7 +317,7 @@ export const AppProvider = ({ children }) => {
       } else {
         dispatch({
           type: 'CHECK_AUTH',
-          payload: { isAuthenticated: true, user: initialState.user } // Set to true for development
+          payload: { isAuthenticated: false, user: null }
         });
       }
     } catch (error) {
@@ -484,16 +437,7 @@ export const AppProvider = ({ children }) => {
         name: 'Diploma Scientifico',
         type: 'Liceo Scientifico',
         academicYear: '2023-2024',
-        subjects: [
-          'Matematica',
-          'Fisica',
-          'Chimica',
-          'Biologia',
-          'Italiano',
-          'Storia',
-          'Filosofia',
-          'Inglese'
-        ],
+        subjects: ['Matematica', 'Fisica', 'Chimica', 'Biologia', 'Italiano', 'Storia', 'Filosofia', 'Inglese'],
         price: 2800,
         notes: 'Corso completo per diploma scientifico'
       },
@@ -572,33 +516,19 @@ export const AppProvider = ({ children }) => {
 
     // Only dispatch if arrays are empty (to avoid duplicates)
     if (state.students.length === 0) {
-      sampleStudents.forEach(student =>
-        dispatch({ type: 'ADD_STUDENT', payload: student })
-      );
+      sampleStudents.forEach(student => dispatch({ type: 'ADD_STUDENT', payload: student }));
     }
-
     if (state.schools.length === 0) {
-      sampleSchools.forEach(school =>
-        dispatch({ type: 'ADD_SCHOOL', payload: school })
-      );
+      sampleSchools.forEach(school => dispatch({ type: 'ADD_SCHOOL', payload: school }));
     }
-
     if (state.courses.length === 0) {
-      sampleCourses.forEach(course =>
-        dispatch({ type: 'ADD_COURSE', payload: course })
-      );
+      sampleCourses.forEach(course => dispatch({ type: 'ADD_COURSE', payload: course }));
     }
-
     if (state.leads.length === 0) {
-      sampleLeads.forEach(lead =>
-        dispatch({ type: 'ADD_LEAD', payload: lead })
-      );
+      sampleLeads.forEach(lead => dispatch({ type: 'ADD_LEAD', payload: lead }));
     }
-
     if (state.tasks.length === 0) {
-      sampleTasks.forEach(task =>
-        dispatch({ type: 'ADD_TASK', payload: task })
-      );
+      sampleTasks.forEach(task => dispatch({ type: 'ADD_TASK', payload: task }));
     }
   };
 

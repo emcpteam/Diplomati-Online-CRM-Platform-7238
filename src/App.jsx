@@ -3,10 +3,8 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
-// Import layout components directly from their individual files
-import Header from './components/layout/Header.jsx';
-import Sidebar from './components/layout/Sidebar.jsx';
-import Footer from './components/layout/Footer.jsx';
+// Layout Components
+import { Sidebar, Header, Footer } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
@@ -27,14 +25,8 @@ import {
   ElectronicInvoicing
 } from './pages';
 
-// Auth pages
-import QuestLogin from './pages/QuestLogin';
-import QuestOnboarding from './pages/QuestOnboarding';
-import QuestProtectedRoute from './components/QuestProtectedRoute';
-
 // Context
 import { AppProvider, useApp } from './context/AppContext';
-import { AuthProvider } from './context/AuthContext';
 
 const AppContent = () => {
   const { state } = useApp();
@@ -192,31 +184,18 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <Router>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
-              duration: 4000,
-            }}
-          />
-          <Routes>
-            <Route path="/quest-login" element={<QuestLogin />} />
-            <Route 
-              path="/onboarding" 
-              element={
-                <QuestProtectedRoute>
-                  <QuestOnboarding />
-                </QuestProtectedRoute>
-              } 
-            />
-            <Route path="/*" element={<AppContent />} />
-          </Routes>
-        </Router>
-      </AppProvider>
-    </AuthProvider>
+    <AppProvider>
+      <Router>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            className: 'bg-white shadow-soft border border-neutral-200 rounded-xl',
+            duration: 4000,
+          }}
+        />
+        <AppContent />
+      </Router>
+    </AppProvider>
   );
 }
 

@@ -7,6 +7,7 @@ import SafeIcon from '../../common/SafeIcon';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
+
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: FiIcons.FiHome },
     { name: 'Studenti', path: '/students', icon: FiIcons.FiUsers },
@@ -18,7 +19,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'Integrazioni', path: '/integrations', icon: FiIcons.FiLink },
     { name: 'Utenti', path: '/users', icon: FiIcons.FiUserCheck },
     { name: 'Strumenti', path: '/tools', icon: FiIcons.FiTool },
-    { name: 'Analytics', path: '/analytics', icon: FiIcons.FiBarChart2 },
+    { name: 'Analytics', path: '/analytics', icon: FiIcons.FiBarChart3 },
   ];
 
   return (
@@ -48,7 +49,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center px-6 py-8 border-b border-neutral-200/50">
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center space-x-3">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-3"
+            >
               <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center shadow-medium">
                 <SafeIcon icon={LuIcons.LuGraduationCap} className="w-6 h-6 text-white" />
               </div>
@@ -86,7 +90,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       <SafeIcon
                         icon={item.icon}
                         className={`w-5 h-5 transition-colors ${
-                          isActive ? 'text-white' : 'text-neutral-500 group-hover:text-neutral-700'
+                          isActive
+                            ? 'text-white'
+                            : 'text-neutral-500 group-hover:text-neutral-700'
                         }`}
                       />
                       <span className="font-medium">{item.name}</span>

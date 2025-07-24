@@ -4,18 +4,9 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../utils/SafeIcon';
 
 // Button Component
-export const Button = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  icon,
-  iconPosition = 'left',
-  loading = false,
-  disabled = false,
-  className = '',
-  ...props
-}) => {
+export const Button = ({ children, variant = 'primary', size = 'md', icon, iconPosition = 'left', loading = false, disabled = false, className = '', ...props }) => {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  
   const variants = {
     primary: 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:from-primary-600 hover:to-secondary-600 focus:ring-primary-500 shadow-medium',
     secondary: 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-500',
@@ -24,12 +15,14 @@ export const Button = ({
     success: 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-500',
     danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
   };
+
   const sizes = {
     sm: 'px-3 py-2 text-sm',
     md: 'px-4 py-2.5 text-sm',
     lg: 'px-6 py-3 text-base',
     xl: 'px-8 py-4 text-lg',
   };
+
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`;
 
   return (
@@ -58,14 +51,7 @@ export const Button = ({
 };
 
 // Input Component
-export const Input = ({
-  label,
-  error,
-  icon,
-  className = '',
-  containerClassName = '',
-  ...props
-}) => {
+export const Input = ({ label, error, icon, className = '', containerClassName = '', ...props }) => {
   return (
     <div className={`space-y-2 ${containerClassName}`}>
       {label && (
@@ -93,12 +79,7 @@ export const Input = ({
 };
 
 // Card Component
-export const Card = ({
-  children,
-  className = '',
-  hover = true,
-  ...props
-}) => {
+export const Card = ({ children, className = '', hover = true, ...props }) => {
   return (
     <motion.div
       whileHover={hover ? { y: -2, boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)' } : {}}
@@ -112,11 +93,7 @@ export const Card = ({
 };
 
 // Badge Component
-export const Badge = ({
-  children,
-  variant = 'default',
-  className = ''
-}) => {
+export const Badge = ({ children, variant = 'default', className = '' }) => {
   const variants = {
     default: 'bg-neutral-100 text-neutral-700',
     primary: 'bg-primary-100 text-primary-700',
@@ -134,14 +111,7 @@ export const Badge = ({
 };
 
 // Modal Component
-export const Modal = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  size = 'md',
-  showCloseButton = true
-}) => {
+export const Modal = ({ isOpen, onClose, title, children, size = 'md', showCloseButton = true }) => {
   if (!isOpen) return null;
 
   const sizeClasses = {
