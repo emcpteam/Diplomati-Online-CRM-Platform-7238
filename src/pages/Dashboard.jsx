@@ -89,7 +89,6 @@ const Dashboard = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     toast.loading('Aggiornamento dati...', { id: 'refresh' });
-    
     setTimeout(() => {
       setIsRefreshing(false);
       toast.success('Dati aggiornati correttamente!', { id: 'refresh' });
@@ -117,9 +116,6 @@ const Dashboard = () => {
           >
             Aggiorna
           </Button>
-          <Button icon={FiIcons.FiPlus}>
-            Azione Rapida
-          </Button>
         </div>
       </div>
 
@@ -145,9 +141,13 @@ const Dashboard = () => {
                     )}
                   </p>
                   <div className="flex items-center mt-2">
-                    <span className={`text-sm font-medium ${
-                      stat.changeType === 'positive' ? 'text-accent-600' : 'text-red-600'
-                    }`}>
+                    <span
+                      className={`text-sm font-medium ${
+                        stat.changeType === 'positive'
+                          ? 'text-accent-600'
+                          : 'text-red-600'
+                      }`}
+                    >
                       {stat.change}
                     </span>
                     <span className="text-xs text-neutral-500 ml-1">
@@ -155,7 +155,9 @@ const Dashboard = () => {
                     </span>
                   </div>
                 </div>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}
+                >
                   <SafeIcon icon={stat.icon} className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -187,12 +189,21 @@ const Dashboard = () => {
                   className="flex items-start space-x-4 p-4 rounded-xl hover:bg-neutral-50 transition-colors"
                 >
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-lg flex items-center justify-center">
-                    <SafeIcon icon={activity.icon} className="w-5 h-5 text-primary-600" />
+                    <SafeIcon
+                      icon={activity.icon}
+                      className="w-5 h-5 text-primary-600"
+                    />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-neutral-800">{activity.title}</h4>
-                    <p className="text-sm text-neutral-600 mt-1">{activity.description}</p>
-                    <p className="text-xs text-neutral-500 mt-2">{activity.time}</p>
+                    <h4 className="font-medium text-neutral-800">
+                      {activity.title}
+                    </h4>
+                    <p className="text-sm text-neutral-600 mt-1">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-2">
+                      {activity.time}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -208,10 +219,26 @@ const Dashboard = () => {
             </h3>
             <div className="space-y-3">
               {[
-                { title: 'Aggiungi Studente', icon: FiIcons.FiUserPlus, path: '/students' },
-                { title: 'Gestisci Lead', icon: FiIcons.FiTarget, path: '/leads' },
-                { title: 'Nuova Scuola', icon: FiIcons.FiMapPin, path: '/schools' },
-                { title: 'Crea Corso', icon: FiIcons.FiBookOpen, path: '/courses' },
+                {
+                  title: 'Aggiungi Studente',
+                  icon: FiIcons.FiUserPlus,
+                  path: '/students',
+                },
+                {
+                  title: 'Gestisci Lead',
+                  icon: FiIcons.FiTarget,
+                  path: '/leads',
+                },
+                {
+                  title: 'Nuova Scuola',
+                  icon: FiIcons.FiMapPin,
+                  path: '/schools',
+                },
+                {
+                  title: 'Crea Corso',
+                  icon: FiIcons.FiBookOpen,
+                  path: '/courses',
+                },
               ].map((action) => (
                 <Link key={action.title} to={action.path}>
                   <motion.div
@@ -220,9 +247,14 @@ const Dashboard = () => {
                     className="flex items-center space-x-3 p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-pointer"
                   >
                     <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                      <SafeIcon icon={action.icon} className="w-5 h-5 text-primary-600" />
+                      <SafeIcon
+                        icon={action.icon}
+                        className="w-5 h-5 text-primary-600"
+                      />
                     </div>
-                    <span className="font-medium text-neutral-800">{action.title}</span>
+                    <span className="font-medium text-neutral-800">
+                      {action.title}
+                    </span>
                   </motion.div>
                 </Link>
               ))}
@@ -236,29 +268,38 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
           <div>
             <p className="text-2xl font-bold text-primary-600">
-              €{state.students.reduce((sum, s) => sum + s.paidAmount, 0).toLocaleString()}
+              €{state.students
+                .reduce((sum, s) => sum + s.paidAmount, 0)
+                .toLocaleString()}
             </p>
             <p className="text-sm text-neutral-500">Fatturato Mese</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-secondary-600">
-              {state.leads.filter(l => {
-                const today = new Date();
-                const leadDate = new Date(l.createdAt);
-                return leadDate.getMonth() === today.getMonth();
-              }).length}
+              {
+                state.leads.filter((l) => {
+                  const today = new Date();
+                  const leadDate = new Date(l.createdAt);
+                  return leadDate.getMonth() === today.getMonth();
+                }).length
+              }
             </p>
             <p className="text-sm text-neutral-500">Lead Questo Mese</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-accent-600">
-              {state.students.filter(s => s.status === 'active').length}
+              {state.students.filter((s) => s.status === 'active').length}
             </p>
             <p className="text-sm text-neutral-500">Studenti Attivi</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-orange-600">
-              {((state.leads.filter(l => l.status === 'converted').length / Math.max(state.leads.length, 1)) * 100).toFixed(1)}%
+              {(
+                (state.leads.filter((l) => l.status === 'converted').length /
+                  Math.max(state.leads.length, 1)) *
+                100
+              ).toFixed(1)}
+              %
             </p>
             <p className="text-sm text-neutral-500">Tasso Conversione</p>
           </div>

@@ -12,17 +12,19 @@ const Header = ({ setSidebarOpen }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const handleGlobalSearch = (term) => {
     if (!term.trim()) return [];
+
     const results = [];
 
     // Search students
     state.students.forEach(student => {
-      if (student.firstName.toLowerCase().includes(term.toLowerCase()) || 
-          student.lastName.toLowerCase().includes(term.toLowerCase()) || 
-          student.email.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        student.firstName.toLowerCase().includes(term.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(term.toLowerCase()) ||
+        student.email.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'student',
           id: student.id,
@@ -35,9 +37,11 @@ const Header = ({ setSidebarOpen }) => {
 
     // Search leads
     state.leads.forEach(lead => {
-      if (lead.firstName.toLowerCase().includes(term.toLowerCase()) || 
-          lead.lastName.toLowerCase().includes(term.toLowerCase()) || 
-          lead.email.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        lead.firstName.toLowerCase().includes(term.toLowerCase()) ||
+        lead.lastName.toLowerCase().includes(term.toLowerCase()) ||
+        lead.email.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'lead',
           id: lead.id,
@@ -50,8 +54,10 @@ const Header = ({ setSidebarOpen }) => {
 
     // Search schools
     state.schools.forEach(school => {
-      if (school.name.toLowerCase().includes(term.toLowerCase()) || 
-          school.address.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        school.name.toLowerCase().includes(term.toLowerCase()) ||
+        school.address.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'school',
           id: school.id,
@@ -64,8 +70,10 @@ const Header = ({ setSidebarOpen }) => {
 
     // Search courses
     state.courses.forEach(course => {
-      if (course.name.toLowerCase().includes(term.toLowerCase()) || 
-          course.type.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        course.name.toLowerCase().includes(term.toLowerCase()) ||
+        course.type.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'course',
           id: course.id,
@@ -97,127 +105,29 @@ const Header = ({ setSidebarOpen }) => {
     window.location.href = '/login';
   };
 
-  const QuickActionsModal = () => {
-    const quickActions = [
-      {
-        title: 'Aggiungi Studente',
-        icon: FiIcons.FiUserPlus,
-        color: 'from-blue-500 to-blue-600',
-        action: () => window.location.hash = '/students'
-      },
-      {
-        title: 'Nuovo Lead',
-        icon: FiIcons.FiTarget,
-        color: 'from-green-500 to-green-600',
-        action: () => window.location.hash = '/leads'
-      },
-      {
-        title: 'Aggiungi Scuola',
-        icon: FiIcons.FiMapPin,
-        color: 'from-purple-500 to-purple-600',
-        action: () => window.location.hash = '/schools'
-      },
-      {
-        title: 'Crea Corso',
-        icon: FiIcons.FiBookOpen,
-        color: 'from-orange-500 to-orange-600',
-        action: () => window.location.hash = '/courses'
-      },
-      {
-        title: 'Genera Report',
-        icon: FiIcons.FiFileText,
-        color: 'from-red-500 to-red-600',
-        action: () => window.location.hash = '/analytics'
-      },
-      {
-        title: 'Invia Email Massiva',
-        icon: FiIcons.FiMail,
-        color: 'from-indigo-500 to-indigo-600',
-        action: () => console.log('Email massiva')
-      },
-      {
-        title: 'Backup Dati',
-        icon: FiIcons.FiDatabase,
-        color: 'from-gray-500 to-gray-600',
-        action: () => console.log('Backup')
-      },
-      {
-        title: 'Sincronizza Lead',
-        icon: FiIcons.FiRefreshCw,
-        color: 'from-teal-500 to-teal-600',
-        action: () => window.location.hash = '/leads'
-      }
-    ];
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={() => setShowQuickActions(false)}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-2xl shadow-strong max-w-2xl w-full"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-6 border-b border-neutral-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-neutral-800">Azioni Rapide</h2>
-              <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowQuickActions(false)} />
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {quickActions.map((action, index) => (
-                <motion.button
-                  key={action.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => {
-                    action.action();
-                    setShowQuickActions(false);
-                  }}
-                  className="p-4 bg-white border-2 border-neutral-200 rounded-xl hover:border-primary-500 hover:shadow-medium transition-all group"
-                >
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}
-                  >
-                    <SafeIcon icon={action.icon} className="w-6 h-6 text-white" />
-                  </div>
-                  <p className="text-sm font-medium text-neutral-800 text-center">{action.title}</p>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  };
-
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/50 px-6 py-4">
       <div className="flex items-center justify-between">
         {/* Left side */}
         <div className="flex items-center space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-neutral-100 transition-colors"
           >
             <SafeIcon icon={FiIcons.FiMenu} className="w-6 h-6 text-neutral-600" />
-          </motion.button>
+          </button>
+
           <div>
             <h2 className="text-lg font-display font-semibold text-neutral-800">
               Benvenuto, {state.user.name}
             </h2>
             <p className="text-sm text-neutral-500">
-              {new Date().toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString('it-IT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
             </p>
           </div>
         </div>
@@ -226,9 +136,7 @@ const Header = ({ setSidebarOpen }) => {
         <div className="flex items-center space-x-4">
           {/* Notifications */}
           <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-2 rounded-lg hover:bg-neutral-100 transition-colors relative"
             >
@@ -238,7 +146,8 @@ const Header = ({ setSidebarOpen }) => {
                   {state.notifications.length}
                 </span>
               )}
-            </motion.button>
+            </button>
+
             {showNotifications && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -255,7 +164,10 @@ const Header = ({ setSidebarOpen }) => {
                     </p>
                   ) : (
                     state.notifications.map((notification) => (
-                      <div key={notification.id} className="px-4 py-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0">
+                      <div
+                        key={notification.id}
+                        className="px-4 py-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0"
+                      >
                         <p className="text-sm text-neutral-800">{notification.message}</p>
                         <p className="text-xs text-neutral-500 mt-1">{notification.time}</p>
                       </div>
@@ -268,14 +180,13 @@ const Header = ({ setSidebarOpen }) => {
 
           {/* Search */}
           <div className="relative">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setShowSearch(!showSearch)}
               className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
             >
               <SafeIcon icon={FiIcons.FiSearch} className="w-6 h-6 text-neutral-600" />
-            </motion.button>
+            </button>
+
             <AnimatePresence>
               {showSearch && (
                 <motion.div
@@ -292,6 +203,7 @@ const Header = ({ setSidebarOpen }) => {
                       icon={FiIcons.FiSearch}
                     />
                   </div>
+
                   {searchResults.length > 0 && (
                     <div className="border-t border-neutral-200 max-h-64 overflow-y-auto">
                       {searchResults.map((result) => (
@@ -303,16 +215,22 @@ const Header = ({ setSidebarOpen }) => {
                           whileHover={{ x: 4 }}
                         >
                           <div className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center">
-                            <SafeIcon icon={getTypeIcon(result.type)} className="w-4 h-4 text-neutral-600" />
+                            <SafeIcon
+                              icon={getTypeIcon(result.type)}
+                              className="w-4 h-4 text-neutral-600"
+                            />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-neutral-800">{result.title}</p>
+                            <p className="text-sm font-medium text-neutral-800">
+                              {result.title}
+                            </p>
                             <p className="text-xs text-neutral-500">{result.subtitle}</p>
                           </div>
                         </motion.a>
                       ))}
                     </div>
                   )}
+
                   {searchTerm.length > 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center">
                       <p className="text-sm text-neutral-500">Nessun risultato trovato</p>
@@ -323,20 +241,9 @@ const Header = ({ setSidebarOpen }) => {
             </AnimatePresence>
           </div>
 
-          {/* Quick Actions */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowQuickActions(true)}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-          >
-            <SafeIcon icon={FiIcons.FiZap} className="w-6 h-6 text-neutral-600" />
-          </motion.button>
-
           {/* User menu */}
           <div className="relative">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
+            <div
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
             >
@@ -350,7 +257,8 @@ const Header = ({ setSidebarOpen }) => {
                 <p className="text-xs text-neutral-500">{state.user.role}</p>
               </div>
               <SafeIcon icon={FiIcons.FiChevronDown} className="w-4 h-4 text-neutral-500" />
-            </motion.div>
+            </div>
+
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
@@ -363,6 +271,7 @@ const Header = ({ setSidebarOpen }) => {
                     <p className="font-medium text-neutral-800">{state.user.name}</p>
                     <p className="text-sm text-neutral-500">{state.user.email}</p>
                   </div>
+
                   <div className="py-2">
                     <button
                       onClick={() => window.location.hash = '/company'}
@@ -371,6 +280,7 @@ const Header = ({ setSidebarOpen }) => {
                       <SafeIcon icon={FiIcons.FiUser} className="w-4 h-4 text-neutral-500" />
                       <span className="text-sm text-neutral-700">Profilo</span>
                     </button>
+
                     <button
                       onClick={() => window.location.hash = '/integrations'}
                       className="w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-neutral-50 transition-colors"
@@ -378,6 +288,7 @@ const Header = ({ setSidebarOpen }) => {
                       <SafeIcon icon={FiIcons.FiSettings} className="w-4 h-4 text-neutral-500" />
                       <span className="text-sm text-neutral-700">Impostazioni</span>
                     </button>
+
                     <div className="border-t border-neutral-200 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
@@ -394,11 +305,6 @@ const Header = ({ setSidebarOpen }) => {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions Modal */}
-      <AnimatePresence>
-        {showQuickActions && <QuickActionsModal />}
-      </AnimatePresence>
     </header>
   );
 };

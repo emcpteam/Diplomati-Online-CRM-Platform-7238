@@ -10,7 +10,7 @@ import { useApp } from '../context/AppContext';
 // Sidebar Component
 export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
-  
+
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: FiIcons.FiHome },
     { name: 'Studenti', path: '/students', icon: FiIcons.FiUsers },
@@ -18,7 +18,6 @@ export const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'Corsi', path: '/courses', icon: FiIcons.FiBookOpen },
     { name: 'Lead', path: '/leads', icon: FiIcons.FiTarget },
     { name: 'Template', path: '/templates', icon: FiIcons.FiFileText },
-    { name: 'Fatturazione', path: '/invoicing', icon: FiIcons.FiFileText },
     { name: 'Azienda', path: '/company', icon: FiIcons.FiSettings },
     { name: 'Integrazioni', path: '/integrations', icon: FiIcons.FiLink },
     { name: 'Utenti', path: '/users', icon: FiIcons.FiUserCheck },
@@ -127,7 +126,6 @@ export const Header = ({ setSidebarOpen }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const handleGlobalSearch = (term) => {
     if (!term.trim()) return [];
@@ -136,9 +134,11 @@ export const Header = ({ setSidebarOpen }) => {
 
     // Search students
     state.students.forEach(student => {
-      if (student.firstName.toLowerCase().includes(term.toLowerCase()) ||
-          student.lastName.toLowerCase().includes(term.toLowerCase()) ||
-          student.email.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        student.firstName.toLowerCase().includes(term.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(term.toLowerCase()) ||
+        student.email.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'student',
           id: student.id,
@@ -152,8 +152,10 @@ export const Header = ({ setSidebarOpen }) => {
 
     // Search schools
     state.schools.forEach(school => {
-      if (school.name.toLowerCase().includes(term.toLowerCase()) ||
-          school.address.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        school.name.toLowerCase().includes(term.toLowerCase()) ||
+        school.address.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'school',
           id: school.id,
@@ -167,8 +169,10 @@ export const Header = ({ setSidebarOpen }) => {
 
     // Search courses
     state.courses.forEach(course => {
-      if (course.name.toLowerCase().includes(term.toLowerCase()) ||
-          course.type.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        course.name.toLowerCase().includes(term.toLowerCase()) ||
+        course.type.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'course',
           id: course.id,
@@ -182,9 +186,11 @@ export const Header = ({ setSidebarOpen }) => {
 
     // Search leads
     state.leads.forEach(lead => {
-      if (lead.firstName.toLowerCase().includes(term.toLowerCase()) ||
-          lead.lastName.toLowerCase().includes(term.toLowerCase()) ||
-          lead.email.toLowerCase().includes(term.toLowerCase())) {
+      if (
+        lead.firstName.toLowerCase().includes(term.toLowerCase()) ||
+        lead.lastName.toLowerCase().includes(term.toLowerCase()) ||
+        lead.email.toLowerCase().includes(term.toLowerCase())
+      ) {
         results.push({
           type: 'lead',
           id: lead.id,
@@ -206,147 +212,6 @@ export const Header = ({ setSidebarOpen }) => {
     window.location.href = '/login';
   };
 
-  const QuickActionsModal = () => {
-    const quickActions = [
-      {
-        title: 'Aggiungi Studente',
-        description: 'Iscrivi un nuovo studente',
-        icon: FiIcons.FiUserPlus,
-        color: 'from-blue-500 to-blue-600',
-        action: () => window.location.hash = '/students'
-      },
-      {
-        title: 'Nuovo Lead',
-        description: 'Gestisci nuovi contatti',
-        icon: FiIcons.FiTarget,
-        color: 'from-green-500 to-green-600',
-        action: () => window.location.hash = '/leads'
-      },
-      {
-        title: 'Aggiungi Scuola',
-        description: 'Partner per esami',
-        icon: FiIcons.FiMapPin,
-        color: 'from-purple-500 to-purple-600',
-        action: () => window.location.hash = '/schools'
-      },
-      {
-        title: 'Crea Corso',
-        description: 'Nuovo corso di studi',
-        icon: FiIcons.FiBookOpen,
-        color: 'from-orange-500 to-orange-600',
-        action: () => window.location.hash = '/courses'
-      },
-      {
-        title: 'Genera Report',
-        description: 'Analytics e statistiche',
-        icon: FiIcons.FiFileText,
-        color: 'from-red-500 to-red-600',
-        action: () => window.location.hash = '/analytics'
-      },
-      {
-        title: 'Email Massiva',
-        description: 'Comunicazioni bulk',
-        icon: FiIcons.FiMail,
-        color: 'from-indigo-500 to-indigo-600',
-        action: () => console.log('Email massiva')
-      },
-      {
-        title: 'Backup Dati',
-        description: 'Esporta tutti i dati',
-        icon: FiIcons.FiDatabase,
-        color: 'from-gray-500 to-gray-600',
-        action: () => console.log('Backup')
-      },
-      {
-        title: 'Sincronizza Lead',
-        description: 'Aggiorna da fonti esterne',
-        icon: FiIcons.FiRefreshCw,
-        color: 'from-teal-500 to-teal-600',
-        action: () => window.location.hash = '/leads'
-      },
-      {
-        title: 'Template Manager',
-        description: 'Gestisci template',
-        icon: FiIcons.FiEdit3,
-        color: 'from-pink-500 to-pink-600',
-        action: () => window.location.hash = '/templates'
-      },
-      {
-        title: 'Integrazioni',
-        description: 'Configura API esterne',
-        icon: FiIcons.FiLink,
-        color: 'from-yellow-500 to-yellow-600',
-        action: () => window.location.hash = '/integrations'
-      },
-      {
-        title: 'Strumenti Sviluppo',
-        description: 'Tools per sviluppatori',
-        icon: FiIcons.FiTool,
-        color: 'from-cyan-500 to-cyan-600',
-        action: () => window.location.hash = '/tools'
-      },
-      {
-        title: 'Impostazioni Azienda',
-        description: 'Configura dati aziendali',
-        icon: FiIcons.FiSettings,
-        color: 'from-violet-500 to-violet-600',
-        action: () => window.location.hash = '/company'
-      }
-    ];
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={() => setShowQuickActions(false)}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-3xl shadow-strong max-w-5xl w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-8 border-b border-neutral-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-3xl font-bold text-neutral-800">Azioni Rapide</h2>
-                <p className="text-neutral-600 mt-2">Accesso veloce alle funzioni principali del CRM</p>
-              </div>
-              <Button variant="ghost" icon={FiIcons.FiX} onClick={() => setShowQuickActions(false)} />
-            </div>
-          </div>
-
-          <div className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {quickActions.map((action, index) => (
-                <motion.button
-                  key={action.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => {
-                    action.action();
-                    setShowQuickActions(false);
-                  }}
-                  className="p-6 bg-white border-2 border-neutral-200 rounded-2xl hover:border-primary-500 hover:shadow-medium transition-all group text-left"
-                >
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <SafeIcon icon={action.icon} className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">{action.title}</h3>
-                  <p className="text-sm text-neutral-600">{action.description}</p>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  };
-
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/50 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -360,7 +225,6 @@ export const Header = ({ setSidebarOpen }) => {
           >
             <SafeIcon icon={FiIcons.FiMenu} className="w-6 h-6 text-neutral-600" />
           </motion.button>
-
           <div>
             <h2 className="text-lg font-display font-semibold text-neutral-800">
               Benvenuto, {state.user?.name}
@@ -406,7 +270,6 @@ export const Header = ({ setSidebarOpen }) => {
                       autoFocus
                     />
                   </div>
-
                   {searchResults.length > 0 && (
                     <div className="border-t border-neutral-200 max-h-64 overflow-y-auto">
                       {searchResults.map((result) => (
@@ -428,7 +291,6 @@ export const Header = ({ setSidebarOpen }) => {
                       ))}
                     </div>
                   )}
-
                   {searchTerm.length > 2 && searchResults.length === 0 && (
                     <div className="p-4 text-center">
                       <p className="text-sm text-neutral-500">Nessun risultato trovato</p>
@@ -438,16 +300,6 @@ export const Header = ({ setSidebarOpen }) => {
               )}
             </AnimatePresence>
           </div>
-
-          {/* Quick Actions */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowQuickActions(true)}
-            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-          >
-            <SafeIcon icon={FiIcons.FiZap} className="w-6 h-6 text-neutral-600" />
-          </motion.button>
 
           {/* User menu */}
           <div className="relative">
@@ -480,7 +332,6 @@ export const Header = ({ setSidebarOpen }) => {
                     <p className="font-medium text-neutral-800">{state.user?.name}</p>
                     <p className="text-sm text-neutral-500">{state.user?.email}</p>
                   </div>
-                  
                   <div className="py-2">
                     <button
                       onClick={() => window.location.hash = '/company'}
@@ -489,7 +340,6 @@ export const Header = ({ setSidebarOpen }) => {
                       <SafeIcon icon={FiIcons.FiUser} className="w-4 h-4 text-neutral-500" />
                       <span className="text-sm text-neutral-700">Profilo</span>
                     </button>
-                    
                     <div className="border-t border-neutral-200 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
@@ -506,11 +356,6 @@ export const Header = ({ setSidebarOpen }) => {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions Modal */}
-      <AnimatePresence>
-        {showQuickActions && <QuickActionsModal />}
-      </AnimatePresence>
     </header>
   );
 };
@@ -539,7 +384,6 @@ export const Footer = () => {
             <span>SDI: ABCDEFG</span>
           </div>
         </div>
-
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center space-x-2 text-neutral-500">
             <span>Sviluppato da Emanuele Marchiori</span>

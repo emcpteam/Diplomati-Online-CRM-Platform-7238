@@ -4,6 +4,7 @@ import * as FiIcons from 'react-icons/fi';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import SafeIcon from '../../common/SafeIcon';
+import EmailServerStatus from '../EmailServerStatus';
 import { useApp } from '../../context/AppContext';
 import { sendEmail, emailTemplates } from '../../utils/emailService';
 import toast from 'react-hot-toast';
@@ -27,7 +28,10 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
 
   const handleTemplateChange = (templateId) => {
     if (templateId === 'custom') {
-      setEmailData(prev => ({ ...prev, template: templateId }));
+      setEmailData(prev => ({
+        ...prev,
+        template: templateId
+      }));
       return;
     }
 
@@ -48,9 +52,22 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
       return;
     }
 
+    // Check SMTP configuration
+    const smtpConfig = state.settings.integrations.smtp;
+    if (!smtpConfig || !smtpConfig.active) {
+      toast.error('SMTP non configurato. Vai in Integrazioni > SMTP Email per configurare l\'invio email');
+      return;
+    }
+
     setSending(true);
     try {
-      await sendEmail(lead.email, emailData.subject, emailData.content, state.settings.emailSettings);
+      // Use the real email service
+      const result = await sendEmail(
+        lead.email,
+        emailData.subject,
+        emailData.content,
+        smtpConfig
+      );
 
       // Add communication record
       const communication = {
@@ -60,7 +77,10 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
         content: emailData.content,
         sentAt: new Date().toISOString(),
         status: 'sent',
-        template: emailData.template
+        template: emailData.template,
+        messageId: result.messageId,
+        provider: result.provider,
+        smtpUsed: result.smtpHost
       };
 
       const updatedLead = {
@@ -75,7 +95,7 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
         onEmailSent(updatedLead, communication);
       }
 
-      toast.success('Email inviata con successo!');
+      toast.success(`Email inviata con successo tramite ${result.provider}!`);
       onClose();
     } catch (error) {
       toast.error('Errore nell\'invio email: ' + error.message);
@@ -90,6 +110,13 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
       return;
     }
 
+    // Check SMTP configuration for scheduled emails too
+    const smtpConfig = state.settings.integrations.smtp;
+    if (!smtpConfig || !smtpConfig.active) {
+      toast.error('SMTP non configurato. Configura SMTP prima di programmare email');
+      return;
+    }
+
     // Save as scheduled email
     const scheduledEmail = {
       id: Date.now(),
@@ -99,7 +126,8 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
       content: emailData.content,
       scheduledFor: emailData.scheduledFor,
       status: 'scheduled',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      smtpConfig: smtpConfig.host
     };
 
     // In a real app, you would save this to a scheduled emails collection
@@ -133,6 +161,10 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
       setEmailData(prev => ({ ...prev, content: newContent }));
     }
   };
+
+  // Check SMTP status for UI feedback
+  const smtpConfig = state.settings.integrations.smtp;
+  const isSmtpConfigured = smtpConfig && smtpConfig.active && smtpConfig.host && smtpConfig.username && smtpConfig.password;
 
   return (
     <motion.div
@@ -181,6 +213,42 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Email Server Status */}
+          <EmailServerStatus />
+
+          {/* SMTP Status Warning */}
+          {!isSmtpConfigured && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className="flex items-start space-x-3">
+                <SafeIcon icon={FiIcons.FiAlertTriangle} className="w-5 h-5 text-red-500 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">SMTP Non Configurato</p>
+                  <p className="text-sm text-red-700">
+                    Per inviare email reali, devi prima configurare SMTP in Integrazioni &gt; SMTP Email.
+                    Supportiamo SendGrid, Gmail, Outlook e altri provider.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SMTP Configuration Summary */}
+          {isSmtpConfigured && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center space-x-3">
+                <SafeIcon icon={FiIcons.FiCheckCircle} className="w-5 h-5 text-green-500" />
+                <div>
+                  <p className="text-sm font-medium text-green-800">SMTP Configurato</p>
+                  <p className="text-sm text-green-700">
+                    Server: {smtpConfig.host}:{smtpConfig.port} | 
+                    Da: {smtpConfig.fromName || smtpConfig.username}
+                    {smtpConfig.host === 'smtp.sendgrid.net' && ' (SendGrid API)'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Template Selection */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-3">
@@ -238,7 +306,7 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
                   </div>
                 )}
               </div>
-              
+
               {isHtmlMode ? (
                 <div className="border border-neutral-200 rounded-xl overflow-hidden">
                   <div className="bg-neutral-50 px-4 py-2 border-b border-neutral-200">
@@ -335,33 +403,41 @@ const LeadEmailModal = ({ lead, onClose, onEmailSent }) => {
           <div className="flex items-center justify-between">
             <div className="text-sm text-neutral-500">
               Email sarà inviata a: {lead.email}
+              {isSmtpConfigured && (
+                <div className="text-xs text-green-600 mt-1">
+                  ✓ SMTP: {smtpConfig.host} ({smtpConfig.username})
+                  {smtpConfig.host === 'smtp.sendgrid.net' && ' - SendGrid API'}
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-3">
               <Button variant="outline" onClick={onClose}>
                 Annulla
               </Button>
-              <Button 
-                variant="outline" 
-                icon={FiIcons.FiSave} 
+              <Button
+                variant="outline"
+                icon={FiIcons.FiSave}
                 onClick={handleSave}
               >
                 Salva
               </Button>
               {emailData.scheduledFor && (
-                <Button 
-                  variant="outline" 
-                  icon={FiIcons.FiClock} 
+                <Button
+                  variant="outline"
+                  icon={FiIcons.FiClock}
                   onClick={handleSendLater}
+                  disabled={!isSmtpConfigured}
                 >
                   Programma
                 </Button>
               )}
-              <Button 
-                icon={FiIcons.FiSend} 
+              <Button
+                icon={FiIcons.FiSend}
                 onClick={handleSendNow}
                 loading={sending}
+                disabled={!isSmtpConfigured}
               >
-                Invia Ora
+                {isSmtpConfigured ? 'Invia Ora' : 'SMTP Non Configurato'}
               </Button>
             </div>
           </div>

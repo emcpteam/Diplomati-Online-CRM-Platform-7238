@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 // Layout Components
 import { Sidebar, Header, Footer } from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProductionNotice from './components/ProductionNotice';
 
 // Pages
 import {
@@ -21,8 +22,7 @@ import {
   InternalTools,
   Analytics,
   TemplateCreator,
-  Login,
-  ElectronicInvoicing
+  Login
 } from './pages';
 
 // Context
@@ -44,6 +44,9 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pastel-cream via-pastel-sky/20 to-pastel-mint/30">
+      {/* Production Notice */}
+      <ProductionNotice />
+      
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
         <div className="hidden lg:block w-80 flex-shrink-0">
@@ -58,6 +61,7 @@ const AppContent = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header setSidebarOpen={setSidebarOpen} />
+          
           <main className="flex-1 overflow-y-auto bg-transparent">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -163,18 +167,11 @@ const AppContent = () => {
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/invoicing"
-                  element={
-                    <ProtectedRoute>
-                      <ElectronicInvoicing />
-                    </ProtectedRoute>
-                  }
-                />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </motion.div>
           </main>
+
           <Footer />
         </div>
       </div>

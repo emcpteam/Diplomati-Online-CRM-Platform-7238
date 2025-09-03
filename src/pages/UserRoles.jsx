@@ -6,6 +6,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
+import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import toast from 'react-hot-toast';
 
 const UserRoles = () => {
@@ -29,7 +30,7 @@ const UserRoles = () => {
         users: true,
         tools: true,
         analytics: true,
-        invoicing: true
+        invoicing: true,
       },
       avatar: null
     },
@@ -52,7 +53,7 @@ const UserRoles = () => {
         users: false,
         tools: false,
         analytics: true,
-        invoicing: true
+        invoicing: true,
       },
       avatar: null
     },
@@ -75,7 +76,7 @@ const UserRoles = () => {
         users: false,
         tools: false,
         analytics: false,
-        invoicing: false
+        invoicing: false,
       },
       avatar: null
     },
@@ -98,7 +99,7 @@ const UserRoles = () => {
         users: false,
         tools: false,
         analytics: true,
-        invoicing: true
+        invoicing: true,
       },
       avatar: null
     },
@@ -121,7 +122,7 @@ const UserRoles = () => {
         users: false,
         tools: false,
         analytics: true,
-        invoicing: false
+        invoicing: false,
       },
       avatar: null
     }
@@ -233,6 +234,8 @@ const UserRoles = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
 
   const pagePermissions = [
     { key: 'dashboard', label: 'Dashboard', icon: FiIcons.FiHome },
@@ -277,6 +280,18 @@ const UserRoles = () => {
 
   const getPermissionsCount = (permissions) => {
     return Object.values(permissions).filter(Boolean).length;
+  };
+
+  const handleChangePassword = (user) => {
+    setSelectedUserForPassword(user);
+    setShowChangePasswordModal(true);
+  };
+
+  const handlePasswordChanged = (updatedUser) => {
+    setUsers(prev => prev.map(u => 
+      u.id === updatedUser.id ? { ...u, ...updatedUser } : u
+    ));
+    toast.success('Password cambiata con successo!');
   };
 
   const UserModal = ({ user, onClose }) => {
@@ -328,7 +343,7 @@ const UserRoles = () => {
         setUsers(prev => [...prev, newUser]);
         toast.success('Utente creato con successo!');
       }
-      
+
       onClose();
     };
 
@@ -433,11 +448,11 @@ const UserRoles = () => {
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                         formData.permissions[page.key] ? 'bg-primary-500' : 'bg-neutral-100'
                       }`}>
-                        <SafeIcon 
-                          icon={page.icon} 
+                        <SafeIcon
+                          icon={page.icon}
                           className={`w-5 h-5 ${
                             formData.permissions[page.key] ? 'text-white' : 'text-neutral-400'
-                          }`} 
+                          }`}
                         />
                       </div>
                       <div className="flex-1">
@@ -551,7 +566,8 @@ const UserRoles = () => {
               <div className="text-sm text-neutral-600">
                 <span className="font-medium">
                   {getPermissionsCount(role.defaultPermissions)}/{pagePermissions.length}
-                </span> pagine accessibili
+                </span>
+                {' '}pagine accessibili
               </div>
             </Card>
           ))}
@@ -591,7 +607,10 @@ const UserRoles = () => {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Ultimo accesso:</span>
                   <span className="font-medium text-neutral-800">
-                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('it-IT') : 'Mai'}
+                    {user.lastLogin 
+                      ? new Date(user.lastLogin).toLocaleDateString('it-IT')
+                      : 'Mai'
+                    }
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -604,8 +623,20 @@ const UserRoles = () => {
 
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-200">
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm" icon={FiIcons.FiMail}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={FiIcons.FiMail}
+                  >
                     Email
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={FiIcons.FiLock}
+                    onClick={() => handleChangePassword(user)}
+                  >
+                    Password
                   </Button>
                 </div>
                 <Button
@@ -629,6 +660,18 @@ const UserRoles = () => {
             setSelectedUser(null);
             setShowAddUser(false);
           }}
+        />
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePasswordModal && selectedUserForPassword && (
+        <ChangePasswordModal
+          user={selectedUserForPassword}
+          onClose={() => {
+            setShowChangePasswordModal(false);
+            setSelectedUserForPassword(null);
+          }}
+          onPasswordChanged={handlePasswordChanged}
         />
       )}
 

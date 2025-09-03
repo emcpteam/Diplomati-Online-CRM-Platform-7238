@@ -26,6 +26,3 @@ export { default as TemplateCreator } from './TemplateCreator';
 
 // Authentication
 export { default as Login } from './Login';
-
-// Invoicing
-export { default as ElectronicInvoicing } from './ElectronicInvoicing';

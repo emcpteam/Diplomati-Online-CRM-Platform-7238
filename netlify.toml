@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  functions = "netlify/functions"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+
+# Ensure functions are included in build
+[functions.included_files]
+  "netlify/functions/**" = ["**/*"]
+
+# Function configuration
+[functions.send-email]
+  directory = "netlify/functions"
+
+[functions.test-smtp]
+  directory = "netlify/functions"

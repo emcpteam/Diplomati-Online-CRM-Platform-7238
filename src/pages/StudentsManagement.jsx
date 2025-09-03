@@ -26,9 +26,9 @@ const StudentsManagement = () => {
 
   const filteredStudents = state.students
     .filter(student => {
-      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
       const matchesCourse = filterCourse === 'all' || student.course === filterCourse;
       return matchesSearch && matchesStatus && matchesCourse;
@@ -83,15 +83,34 @@ const StudentsManagement = () => {
       'Data Iscrizione': new Date(student.enrollmentDate).toLocaleDateString('it-IT'),
       'Scuola Esami': getAssignedSchool(student)?.name || 'Non assegnata'
     }));
+
     exportToCSV(data, `studenti-export-${new Date().toISOString().split('T')[0]}.csv`);
     toast.success('Export completato con successo!');
   };
 
   const handleSendEmail = async (student, template) => {
+    // Check SMTP configuration before attempting to send
+    const smtpConfig = state.settings.integrations.smtp;
+    if (!smtpConfig || !smtpConfig.active) {
+      toast.error('SMTP non configurato. Vai in Integrazioni > SMTP Email per configurare l\'invio email');
+      return;
+    }
+
+    const requiredFields = ['host', 'port', 'username', 'password'];
+    const missingFields = requiredFields.filter(field => !smtpConfig[field]);
+    
+    if (missingFields.length > 0) {
+      toast.error(`Configurazione SMTP incompleta. Campi mancanti: ${missingFields.join(', ')}`);
+      return;
+    }
+
     const toastId = toast.loading('Invio email in corso...');
     try {
       const emailData = emailTemplates[template](student);
-      await sendEmail(student.email, emailData.subject, emailData.content, state.settings.emailSettings);
+      
+      // Use the actual SMTP settings from integrations
+      await sendEmail(student.email, emailData.subject, emailData.content, smtpConfig);
+
       const updatedStudent = {
         ...student,
         communications: [
@@ -100,15 +119,19 @@ const StudentsManagement = () => {
             id: Date.now(),
             type: 'email',
             subject: emailData.subject,
+            content: emailData.content,
             sentAt: new Date().toISOString(),
-            status: 'sent'
+            status: 'sent',
+            template: template,
+            smtpUsed: smtpConfig.host
           }
         ]
       };
+
       dispatch({ type: 'UPDATE_STUDENT', payload: updatedStudent });
       toast.success('Email inviata con successo!', { id: toastId });
     } catch (error) {
-      toast.error('Errore durante l\'invio dell\'email', { id: toastId });
+      toast.error('Errore durante l\'invio dell\'email: ' + error.message, { id: toastId });
     }
   };
 
@@ -123,6 +146,10 @@ const StudentsManagement = () => {
       `Studente assegnato a ${assignedSchool?.name || 'nessuna scuola'} per gli esami!`
     );
   };
+
+  // Check if SMTP is configured for UI feedback
+  const smtpConfig = state.settings.integrations.smtp;
+  const isSmtpConfigured = smtpConfig && smtpConfig.active && smtpConfig.host && smtpConfig.username && smtpConfig.password;
 
   return (
     <div className="space-y-8">
@@ -140,18 +167,39 @@ const StudentsManagement = () => {
           <Button variant="outline" icon={FiIcons.FiDownload} onClick={handleExport}>
             Esporta CSV
           </Button>
-          <Button
-            icon={FiIcons.FiPlus}
-            onClick={() => {
-              setModalType('student');
-              setSelectedStudent(null);
-              setShowModal(true);
-            }}
-          >
+          <Button icon={FiIcons.FiPlus} onClick={() => {
+            setModalType('student');
+            setSelectedStudent(null);
+            setShowModal(true);
+          }}>
             Nuovo Studente
           </Button>
         </div>
       </div>
+
+      {/* SMTP Configuration Warning */}
+      {!isSmtpConfigured && (
+        <Card className="p-4 bg-orange-50 border-orange-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <SafeIcon icon={FiIcons.FiAlertTriangle} className="w-5 h-5 text-orange-500" />
+              <div>
+                <p className="text-sm font-medium text-orange-800">SMTP Non Configurato</p>
+                <p className="text-sm text-orange-700">
+                  Configura SMTP nelle integrazioni per abilitare l'invio di email agli studenti.
+                </p>
+              </div>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => window.location.hash = '/integrations'}
+            >
+              Configura SMTP
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card className="p-6">
@@ -200,6 +248,7 @@ const StudentsManagement = () => {
         {filteredStudents.map((student, index) => {
           const paymentProgress = getPaymentProgress(student);
           const assignedSchool = getAssignedSchool(student);
+
           return (
             <motion.div
               key={student.id}
@@ -224,11 +273,13 @@ const StudentsManagement = () => {
                   </div>
                   {getStatusBadge(student.status)}
                 </div>
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Corso:</span>
                     <span className="font-medium text-neutral-800">{student.course}</span>
                   </div>
+
                   {/* School Assignment */}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-500">Scuola Esami:</span>
@@ -249,6 +300,7 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-neutral-500">Pagamenti:</span>
@@ -263,6 +315,7 @@ const StudentsManagement = () => {
                       />
                     </div>
                   </div>
+
                   {student.convertedFromLead && (
                     <div className="flex items-center space-x-2">
                       <SafeIcon icon={FiIcons.FiTarget} className="w-4 h-4 text-accent-500" />
@@ -281,8 +334,10 @@ const StudentsManagement = () => {
                       size="sm"
                       icon={FiIcons.FiMail}
                       onClick={() => handleSendEmail(student, 'welcome')}
+                      disabled={!isSmtpConfigured}
+                      title={!isSmtpConfigured ? 'Configura SMTP per inviare email' : 'Invia email di benvenuto'}
                     >
-                      Email
+                      {isSmtpConfigured ? 'Email' : 'Email (SMTP?)'}
                     </Button>
                   </div>
                   <div className="flex items-center justify-between">
@@ -321,14 +376,11 @@ const StudentsManagement = () => {
           <p className="text-neutral-500 mb-6">
             Non ci sono studenti che corrispondono ai filtri selezionati.
           </p>
-          <Button
-            icon={FiIcons.FiPlus}
-            onClick={() => {
-              setModalType('student');
-              setSelectedStudent(null);
-              setShowModal(true);
-            }}
-          >
+          <Button icon={FiIcons.FiPlus} onClick={() => {
+            setModalType('student');
+            setSelectedStudent(null);
+            setShowModal(true);
+          }}>
             Aggiungi Primo Studente
           </Button>
         </Card>
@@ -346,6 +398,7 @@ const StudentsManagement = () => {
             mode={selectedStudent ? 'edit' : 'add'}
           />
         )}
+
         {showAssignSchoolModal && selectedStudent && (
           <AssignSchoolModal
             student={selectedStudent}
@@ -378,7 +431,7 @@ const StudentsManagement = () => {
             <p className="text-sm text-neutral-500">Incassi Totali</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-warning-600">
+            <p className="text-2xl font-bold text-orange-600">
               €{state.students.reduce((sum, s) => sum + (s.totalAmount - s.paidAmount), 0).toLocaleString()}
             </p>
             <p className="text-sm text-neutral-500">Da Incassare</p>
@@ -388,6 +441,27 @@ const StudentsManagement = () => {
               {state.students.filter(s => s.assignedSchool).length}
             </p>
             <p className="text-sm text-neutral-500">Con Scuola Esami</p>
+          </div>
+        </div>
+        
+        {/* SMTP Status in Stats */}
+        <div className="mt-4 pt-4 border-t border-neutral-200">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${isSmtpConfigured ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-sm text-neutral-600">
+                SMTP: {isSmtpConfigured ? `Configurato (${smtpConfig.host})` : 'Non configurato'}
+              </span>
+            </div>
+            {!isSmtpConfigured && (
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => window.location.hash = '/integrations'}
+              >
+                Configura
+              </Button>
+            )}
           </div>
         </div>
       </Card>
